@@ -14,7 +14,8 @@ typedef struct _ScarlettMixerAppWindowClass    ScarlettMixerAppWindowClass;
 
 
 GType                   sm_app_window_get_type(void);
-ScarlettMixerAppWindow *sm_app_window_new(ScarlettMixerApp *app);
+ScarlettMixerAppWindow *sm_app_window_new(ScarlettMixerApp *app,
+                                          const gchar* card_name);
 void                    sm_app_window_open(ScarlettMixerAppWindow *win,
                                            GFile *file);
 

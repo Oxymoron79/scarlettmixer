@@ -11,6 +11,7 @@ struct _SmChannel
     snd_mixer_elem_t *source_mix;
     sm_channel_type_t channel_type;
     gchar *name;
+    gchar *display_name;
     unsigned int id;
     gchar mix_id;
 };
@@ -92,6 +93,7 @@ sm_channel_finalize(GObject *gobject)
 {
     SmChannel *self = SM_CHANNEL(gobject);
     g_free(self->name);
+    g_free(self->display_name);
     /* Always chain up to the parent class; as with dispose(), finalize()
      * is guaranteed to exist on the parent's class virtual function table
      */
@@ -155,6 +157,24 @@ sm_channel_get_name(SmChannel *self)
     return g_strdup(self->name);
 }
 
+const gchar *
+sm_channel_get_display_name(SmChannel *self)
+{
+    return g_strdup(self->display_name);
+}
+
+unsigned int
+sm_channel_get_id(SmChannel *self)
+{
+    return self->id;
+}
+
+char
+sm_channel_get_mix_id(SmChannel *self)
+{
+    return self->mix_id;
+}
+
 gboolean
 sm_channel_add_mixer_elem(SmChannel *self, snd_mixer_elem_t *elem)
 {
@@ -180,6 +200,7 @@ sm_channel_add_mixer_elem(SmChannel *self, snd_mixer_elem_t *elem)
         self->channel_type = SM_CHANNEL_MASTER;
         self->volume = elem;
         self->name = g_strdup(elem_name);
+        self->display_name = g_strdup(elem_name);
         return TRUE;
     }
 
@@ -202,6 +223,7 @@ sm_channel_add_mixer_elem(SmChannel *self, snd_mixer_elem_t *elem)
         self->channel_type = SM_CHANNEL_OUTPUT;
         self->volume = elem;
         self->name = g_strdup(elem_name);
+        self->display_name = g_strdup(buf);
         self->id = id;
         return TRUE;
     }
@@ -223,13 +245,14 @@ sm_channel_add_mixer_elem(SmChannel *self, snd_mixer_elem_t *elem)
             return FALSE;
         }
         sscanf(elem_name, "Matrix %u Mix %c", &id, &mix_id);
-        if(self->source_mix != NULL && self->id != id)
+        if(self->source_left != NULL && self->id != id)
         {
             return FALSE;
         }
         self->channel_type = SM_CHANNEL_MIX;
         self->volume = elem;
-        self->name = g_strdup_printf(elem_name);
+        self->name = g_strdup(elem_name);
+        self->display_name = g_strdup_printf("%u", id);
         self->id = id;
         self->mix_id = mix_id;
         return TRUE;
@@ -277,7 +300,7 @@ sm_channel_add_mixer_elem(SmChannel *self, snd_mixer_elem_t *elem)
             {
                 return FALSE;
             }
-            if (self->source_mix != NULL)
+            if (self->source_left != NULL)
             {
                 return FALSE;
             }
@@ -287,7 +310,7 @@ sm_channel_add_mixer_elem(SmChannel *self, snd_mixer_elem_t *elem)
                 return FALSE;
             }
             self->channel_type = SM_CHANNEL_MIX;
-            self->source_mix = elem;
+            self->source_left = elem;
             self->id = id;
             return TRUE;
         }

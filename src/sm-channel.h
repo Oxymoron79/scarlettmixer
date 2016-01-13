@@ -26,6 +26,9 @@ typedef enum {
 SmChannel*        sm_channel_new();
 sm_channel_type_t sm_channel_get_channel_type(SmChannel *self);
 const gchar*      sm_channel_get_name(SmChannel *self);
+const gchar *     sm_channel_get_display_name(SmChannel *self);
+unsigned int      sm_channel_get_id(SmChannel *self);
+char              sm_channel_get_mix_id(SmChannel *self);
 gboolean          sm_channel_add_mixer_elem(SmChannel *self, snd_mixer_elem_t *elem);
 gboolean          sm_channel_has_mixer_elem(SmChannel *self, snd_mixer_elem_t *elem);
 void              sm_channel_mixer_elem_changed(SmChannel *self, snd_mixer_elem_t *elem);

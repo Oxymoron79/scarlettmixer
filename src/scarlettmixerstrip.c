@@ -58,8 +58,8 @@ scale_format_value_cb(GtkScale *scale,
 }
 
 static void
-scale_value_changed_cb(GtkRange *range,
-        gpointer user_data) {
+scale_value_changed_cb(GtkRange *range, gpointer user_data)
+{
     ScarlettMixerStripPrivate *priv;
     GtkRange *other_range;
     gdouble value;
@@ -83,14 +83,16 @@ scale_value_changed_cb(GtkRange *range,
     {
         g_warning("scale_value_changed_cb: Cannot set volume in dB.");
     }
-    if (gtk_toggle_button_get_active(priv->join_togglebutton)) {
+    if (gtk_toggle_button_get_active(priv->join_togglebutton)
+            && gtk_widget_is_visible(GTK_WIDGET(other_range)))
+    {
         gtk_range_set_value(other_range, value);
     }
 }
 
 static void
-mute_togglebutton_toggled_cb(GtkToggleButton *togglebutton,
-        gpointer user_data) {
+mute_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpointer user_data)
+{
     ScarlettMixerStripPrivate *priv;
     gboolean active = FALSE;
     int err;
@@ -124,6 +126,7 @@ sm_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
     int idx;
 
     priv = sm_strip_get_instance_private(user_data);
+    g_message("sm_strip_channel_changed_cb: %s.", gtk_label_get_text(priv->name_label));
     if (sm_channel_has_source(channel, SND_MIXER_SCHN_FRONT_LEFT)) {
         idx = sm_channel_source_get_selected_item_index(channel, SND_MIXER_SCHN_FRONT_LEFT);
         if (idx < 0) {
@@ -146,18 +149,24 @@ sm_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
     {
         sm_channel_volume_get_db(priv->channel, SND_MIXER_SCHN_FRONT_LEFT, &vol_db);
         gtk_range_set_value(GTK_RANGE(priv->left_scale), vol_db / 100);
-        // Get mute state: 0 = Muted, 1 = Unmuted
-        sm_channel_volume_get_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT, &mute);
-        gtk_toggle_button_set_active(priv->mute_togglebutton, mute == 0);
+        if (sm_channel_has_volume_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT))
+        {
+            // Get mute state: 0 = Muted, 1 = Unmuted
+            sm_channel_volume_get_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT, &mute);
+            gtk_toggle_button_set_active(priv->mute_togglebutton, mute == 0);
+        }
     }
 
     if (sm_channel_has_volume(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT))
     {
         sm_channel_volume_get_db(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT, &vol_db);
         gtk_range_set_value(GTK_RANGE(priv->right_scale), vol_db / 100);
-        // Get mute state: 0 = Muted, 1 = Unmuted
-        sm_channel_volume_get_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT, &mute);
-        gtk_toggle_button_set_active(priv->mute_togglebutton, mute == 0);
+        if (sm_channel_has_volume_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT))
+        {
+            // Get mute state: 0 = Muted, 1 = Unmuted
+            sm_channel_volume_get_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT, &mute);
+            gtk_toggle_button_set_active(priv->mute_togglebutton, mute == 0);
+        }
     }
 }
 
@@ -213,7 +222,7 @@ sm_strip_new(SmChannel *channel)
     priv = sm_strip_get_instance_private(strip);
     priv->channel = channel;
 
-    gtk_label_set_label(priv->name_label, sm_channel_get_name(priv->channel));
+    gtk_label_set_label(priv->name_label, sm_channel_get_display_name(priv->channel));
 
     if (sm_channel_has_source(priv->channel, SND_MIXER_SCHN_FRONT_LEFT)) {
         list = sm_channel_source_get_item_names(priv->channel, SND_MIXER_SCHN_FRONT_LEFT);
@@ -253,14 +262,6 @@ sm_strip_new(SmChannel *channel)
         gtk_adjustment_set_lower(priv->left_adjustment, min_db / 100);
         gtk_adjustment_set_upper(priv->left_adjustment, max_db / 100);
     }
-    if (sm_channel_has_volume(priv->channel, SND_MIXER_SCHN_FRONT_LEFT))
-    {
-        sm_channel_volume_get_db(priv->channel, SND_MIXER_SCHN_FRONT_LEFT, &vol_db);
-        gtk_range_set_value(GTK_RANGE(priv->left_scale), vol_db / 100);
-        // Get mute state: 0 = Muted, 1 = Unmuted
-        sm_channel_volume_get_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT, &mute);
-        gtk_toggle_button_set_active(priv->mute_togglebutton, mute == 0);
-    }
 
     if (sm_channel_has_volume(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT))
     {
@@ -269,14 +270,38 @@ sm_strip_new(SmChannel *channel)
 
         sm_channel_volume_get_db(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT, &vol_db);
         gtk_range_set_value(GTK_RANGE(priv->right_scale), vol_db / 100);
-        // Get mute state: 0 = Muted, 1 = Unmuted
-        sm_channel_volume_get_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT, &mute);
-        gtk_toggle_button_set_active(priv->mute_togglebutton, mute == 0);
+        if (sm_channel_has_volume_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT))
+        {
+            // Get mute state: 0 = Muted, 1 = Unmuted
+            sm_channel_volume_get_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT, &mute);
+            gtk_toggle_button_set_active(priv->mute_togglebutton, mute == 0);
+        }
+        else
+        {
+            gtk_widget_set_visible(GTK_WIDGET(priv->mute_togglebutton), FALSE);
+        }
     }
     else {
         gtk_widget_set_visible(GTK_WIDGET(priv->right_scale_box), FALSE);
         gtk_widget_set_visible(GTK_WIDGET(priv->join_togglebutton), FALSE);
     }
+
+    if (sm_channel_has_volume(priv->channel, SND_MIXER_SCHN_FRONT_LEFT))
+    {
+        sm_channel_volume_get_db(priv->channel, SND_MIXER_SCHN_FRONT_LEFT, &vol_db);
+        gtk_range_set_value(GTK_RANGE(priv->left_scale), vol_db / 100);
+        if (sm_channel_has_volume_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT))
+        {
+            // Get mute state: 0 = Muted, 1 = Unmuted
+            sm_channel_volume_get_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT, &mute);
+            gtk_toggle_button_set_active(priv->mute_togglebutton, mute == 0);
+        }
+        else
+        {
+            gtk_widget_set_visible(GTK_WIDGET(priv->mute_togglebutton), FALSE);
+        }
+    }
+
     g_signal_connect(SM_CHANNEL(priv->channel), "changed", G_CALLBACK(sm_strip_channel_changed_cb), strip);
     return strip;
 }

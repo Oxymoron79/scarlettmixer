@@ -16,6 +16,8 @@ struct _ScarlettMixerApp
     GtkApplication parent;
 
     snd_hctl_t *hctl;
+    snd_ctl_card_info_t *card_info;
+    const char *card_name;
     snd_mixer_t *mixer;
     GList *channels;
     GList *input_sources;
@@ -27,9 +29,11 @@ static void
 sm_app_activate (GApplication *app)
 {
     ScarlettMixerAppWindow *win;
+    ScarlettMixerApp *sm_app;
 
     printf("sm_app_activate.\n");
-    win = sm_app_window_new(SCARLETTMIXER_APP(app));
+    sm_app = SCARLETTMIXER_APP(app);
+    win = sm_app_window_new(SCARLETTMIXER_APP(app), sm_app->card_name);
     gtk_window_present(GTK_WINDOW(win));
 }
 
@@ -41,14 +45,16 @@ sm_app_open (GApplication  *app,
 {
     GList *windows;
     ScarlettMixerAppWindow *win;
+    ScarlettMixerApp *sm_app;
     int i;
 
     printf("sm_app_open.\n");
+    sm_app = SCARLETTMIXER_APP(app);
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     if (windows)
         win = SCARLETTMIXER_APP_WINDOW(windows->data);
     else
-        win = sm_app_window_new(SCARLETTMIXER_APP(app));
+        win = sm_app_window_new(SCARLETTMIXER_APP(app), sm_app->card_name);
 
     for (i = 0; i < n_files; i++)
         sm_app_window_open(win, files[i]);
@@ -135,7 +141,6 @@ sm_app_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned int mask)
                 g_message("sm_app_mixer_elem_callback: Channel %s has element %s",
                         sm_channel_get_name(ch), snd_mixer_selem_get_name(elem));
                 sm_channel_mixer_elem_changed(ch, elem);
-                break;
             }
         }
         for (list = g_list_first(app->input_sources); list; list = g_list_next(list))
@@ -224,6 +229,14 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
         }
     }
 */
+    snd_ctl_card_info_malloc(&(app->card_info));
+    err = snd_ctl_card_info(snd_hctl_ctl(app->hctl), app->card_info);
+    if (err < 0) {
+        printf("Cannot read information from sound card.");
+        return;
+    }
+    app->card_name = snd_ctl_card_info_get_name(app->card_info);
+
     npfds = snd_mixer_poll_descriptors_count(app->mixer);
     if (npfds > 0) {
         pfds = alloca(sizeof(*pfds) * npfds);
