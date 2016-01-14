@@ -31,7 +31,7 @@ sm_app_activate (GApplication *app)
     ScarlettMixerAppWindow *win;
     ScarlettMixerApp *sm_app;
 
-    printf("sm_app_activate.\n");
+    g_debug("sm_app_activate.");
     sm_app = SCARLETTMIXER_APP(app);
     win = sm_app_window_new(SCARLETTMIXER_APP(app), sm_app->card_name);
     gtk_window_present(GTK_WINDOW(win));
@@ -48,7 +48,7 @@ sm_app_open (GApplication  *app,
     ScarlettMixerApp *sm_app;
     int i;
 
-    printf("sm_app_open.\n");
+    g_debug("sm_app_open.");
     sm_app = SCARLETTMIXER_APP(app);
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     if (windows)
@@ -65,7 +65,7 @@ sm_app_open (GApplication  *app,
 static void
 sm_app_class_init (ScarlettMixerAppClass *class)
 {
-    printf("sm_app_class_init.\n");
+    g_debug("sm_app_class_init.");
     G_APPLICATION_CLASS(class)->activate = sm_app_activate;
     G_APPLICATION_CLASS(class)->open = sm_app_open;
 }
@@ -122,11 +122,11 @@ sm_app_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned int mask)
     SmSource *src;
     GList *list;
 
-    g_message("sm_app_mixer_elem_callback: %s - Mask: 0x%X", snd_mixer_selem_get_name(elem), mask);
+    g_debug("sm_app_mixer_elem_callback: %s - Mask: 0x%X", snd_mixer_selem_get_name(elem), mask);
     app = SCARLETTMIXER_APP(g_application_get_default());
     if (!app)
     {
-        g_message("sm_app_mixer_elem_callback: app == NULL");
+        g_debug("sm_app_mixer_elem_callback: app == NULL");
         return 0;
     }
     if (mask == SND_CTL_EVENT_MASK_REMOVE) {
@@ -138,7 +138,7 @@ sm_app_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned int mask)
             ch = SM_CHANNEL(list->data);
             if (sm_channel_has_mixer_elem(ch, elem))
             {
-                g_message("sm_app_mixer_elem_callback: Channel %s has element %s",
+                g_debug("sm_app_mixer_elem_callback: Channel %s has element %s",
                         sm_channel_get_name(ch), snd_mixer_selem_get_name(elem));
                 sm_channel_mixer_elem_changed(ch, elem);
             }
@@ -148,7 +148,7 @@ sm_app_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned int mask)
             src = SM_SOURCE(list->data);
             if (sm_source_has_mixer_elem(src, elem))
             {
-                g_message("sm_app_mixer_elem_callback: Source %s has element %s",
+                g_debug("sm_app_mixer_elem_callback: Source %s has element %s",
                         sm_source_get_name(src), snd_mixer_selem_get_name(elem));
                 sm_source_mixer_elem_changed(src, elem);
                 break;
@@ -163,7 +163,7 @@ sm_app_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned int mask)
 
 static int
 sm_app_mixer_callback(snd_mixer_t *mixer, unsigned int mask, snd_mixer_elem_t *elem) {
-    g_message("sm_app_mixer_callback: %s - Mask: 0x%X", snd_mixer_selem_get_name(elem), mask);
+    g_debug("sm_app_mixer_callback: %s - Mask: 0x%X", snd_mixer_selem_get_name(elem), mask);
     if (mask & SND_CTL_EVENT_MASK_ADD) {
         snd_mixer_elem_set_callback(elem, sm_app_mixer_elem_callback);
     }
@@ -197,13 +197,13 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
 
     err = snd_mixer_open(&(app->mixer), 0);
     if (err < 0) {
-        g_warning("Cannot open mixer.");
+        g_critical("Cannot open mixer.");
         return;
     }
 
     err = snd_mixer_selem_register(app->mixer, &selem_regopt, NULL);
     if (err < 0) {
-        g_warning("Cannot register simple mixer.");
+        g_critical("Cannot register simple mixer.");
         return;
     }
 
@@ -211,20 +211,20 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
 
     err = snd_mixer_load(app->mixer);
     if (err < 0) {
-        printf("Cannot load mixer controls.");
+        g_critical("Cannot load mixer controls.");
         return;
     }
 
     err = snd_mixer_get_hctl(app->mixer, selem_regopt.device, &(app->hctl));
     if (err < 0) {
-        printf("Cannot get HCTL.\n");
+        g_critical("Cannot get HCTL.\n");
         return;
     }/*
     else {
         snd_hctl_elem_t *hel;
-        g_message("hctl: %d elements.", snd_hctl_get_count(hctl));
+        g_debug("hctl: %d elements.", snd_hctl_get_count(hctl));
         for(hel=snd_hctl_first_elem(hctl); hel; hel=snd_hctl_elem_next(hel)) {
-            g_message("list helem: numid=%u, name=%s",
+            g_debug("list helem: numid=%u, name=%s",
                                 snd_hctl_elem_get_numid(hel), snd_hctl_elem_get_name(hel));
         }
     }
@@ -232,7 +232,7 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
     snd_ctl_card_info_malloc(&(app->card_info));
     err = snd_ctl_card_info(snd_hctl_ctl(app->hctl), app->card_info);
     if (err < 0) {
-        printf("Cannot read information from sound card.");
+        g_critical("Cannot read information from sound card.");
         return;
     }
     app->card_name = snd_ctl_card_info_get_name(app->card_info);
@@ -247,8 +247,8 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
         }
     }
 /*
-    printf("%d mixer elements.\n", snd_mixer_get_count(mixer));
-    printf("%d hctl elements.\n", snd_hctl_get_count(hctl));
+    g_debug("%d mixer elements.", snd_mixer_get_count(mixer));
+    g_debug("%d hctl elements.", snd_hctl_get_count(hctl));
 */
     for (elem = snd_mixer_first_elem(app->mixer); elem; elem = snd_mixer_elem_next(elem))
     {
@@ -258,7 +258,7 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
         {
             elem_added = sm_channel_add_mixer_elem(SM_CHANNEL(item->data), elem);
             if (elem_added) {
-                g_message("Added mixer element %s to channel %s.", snd_mixer_selem_get_name(elem), sm_channel_get_name(SM_CHANNEL(item->data)));
+                g_debug("Added mixer element %s to channel %s.", snd_mixer_selem_get_name(elem), sm_channel_get_name(SM_CHANNEL(item->data)));
                 break;
             }
         }
@@ -277,7 +277,7 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
                 SmSource *src = sm_source_new();
                 if (sm_source_add_mixer_elem(src, elem))
                 {
-                    g_message("Created input source for mixer element %s.", snd_mixer_selem_get_name(elem));
+                    g_debug("Created input source for mixer element %s.", snd_mixer_selem_get_name(elem));
                     app->input_sources = g_list_append(app->input_sources, src);
                 }
             }
@@ -286,14 +286,16 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
                 SmChannel *ch = sm_channel_new();
                 if (sm_channel_add_mixer_elem(ch, elem))
                 {
-                    g_message("Created channel for mixer element %s.", snd_mixer_selem_get_name(elem));
-                    g_message("    Type: %d.", sm_channel_get_channel_type(ch));
-                    g_message("    Name: %s.", sm_channel_get_name(ch));
+                    g_debug("Created channel for mixer element %s.", snd_mixer_selem_get_name(elem));
+                    g_debug("    Type: %d.", sm_channel_get_channel_type(ch));
+                    g_debug("    Name: %s.", sm_channel_get_name(ch));
+                    g_debug("    Has left channel: %s.", sm_channel_has_volume(ch, SND_MIXER_SCHN_FRONT_LEFT));
+                    g_debug("    Has right channel: %s.", sm_channel_has_volume(ch, SND_MIXER_SCHN_FRONT_RIGHT));
                     app->channels = g_list_append(app->channels, ch);
                 }
                 else
                 {
-                    g_message("Could not create channel for mixer element %s", snd_mixer_selem_get_name(elem));
+                    g_warning("Could not create channel for mixer element %s", snd_mixer_selem_get_name(elem));
                     g_object_unref(ch);
                 }
             }
@@ -312,7 +314,7 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
         {
             elem_added = sm_channel_add_mixer_elem(SM_CHANNEL(item->data), elem);
             if (elem_added) {
-                g_message("Added mixer element %s to channel %s.", snd_mixer_selem_get_name(elem), sm_channel_get_name(SM_CHANNEL(item->data)));
+                g_debug("Added mixer element %s to channel %s.", snd_mixer_selem_get_name(elem), sm_channel_get_name(SM_CHANNEL(item->data)));
             }
         }
     }
@@ -326,15 +328,18 @@ sm_app_init (ScarlettMixerApp *app)
     const gchar *prefix = prefix_scarlett;
     int card_number;
 
-    printf("sm_app_init.\n");
+    g_debug("sm_app_init.");
     card_number = sm_app_find_card(prefix);
-    sm_app_open_mixer(app, card_number);
+    if (card_number >= 0)
+    {
+        sm_app_open_mixer(app, card_number);
+    }
 }
 
 ScarlettMixerApp *
 sm_app_new()
 {
-    printf("sm_app_new.\n");
+    g_debug("sm_app_new.");
     return g_object_new(SCARLETTMIXER_APP_TYPE,
                         "application-id", "org.alsa.scarlettmixer",
                         "flags", G_APPLICATION_HANDLES_OPEN,

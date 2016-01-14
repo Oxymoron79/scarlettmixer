@@ -70,12 +70,12 @@ scale_value_changed_cb(GtkRange *range, gpointer user_data)
     priv = sm_strip_get_instance_private(user_data);
     value = gtk_range_get_value(range);
     if(GTK_WIDGET(range) == GTK_WIDGET(priv->left_scale)) {
-        g_message("scale_value_changed_cb: Left - %f dB", value);
+        g_debug("scale_value_changed_cb: Left - %f dB", value);
         ch = SND_MIXER_SCHN_FRONT_LEFT;
         other_range = GTK_RANGE(priv->right_scale);
     }
     if(GTK_WIDGET(range) == GTK_WIDGET(priv->right_scale)) {
-        g_message("scale_value_changed_cb: Right - %f dB", value);
+        g_debug("scale_value_changed_cb: Right - %f dB", value);
         ch = SND_MIXER_SCHN_FRONT_RIGHT;
         other_range = GTK_RANGE(priv->left_scale);
     }
@@ -126,7 +126,7 @@ sm_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
     int idx;
 
     priv = sm_strip_get_instance_private(user_data);
-    g_message("sm_strip_channel_changed_cb: %s.", gtk_label_get_text(priv->name_label));
+    g_debug("sm_strip_channel_changed_cb: %s.", gtk_label_get_text(priv->name_label));
     if (sm_channel_has_source(channel, SND_MIXER_SCHN_FRONT_LEFT)) {
         idx = sm_channel_source_get_selected_item_index(channel, SND_MIXER_SCHN_FRONT_LEFT);
         if (idx < 0) {
