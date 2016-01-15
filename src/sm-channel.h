@@ -40,9 +40,9 @@ gboolean          sm_channel_source_set_selected_item_index(SmChannel *self, snd
 
 gboolean          sm_channel_has_volume(SmChannel *self, snd_mixer_selem_channel_id_t ch);
 gboolean          sm_channel_has_volume_mute(SmChannel *self, snd_mixer_selem_channel_id_t ch);
-gboolean          sm_channel_volume_get_range_db(SmChannel *self, long *min_db, long *max_db);
-gboolean          sm_channel_volume_get_db(SmChannel *self, snd_mixer_selem_channel_id_t ch, long *vol_db);
-gboolean          sm_channel_volume_set_db(SmChannel *self, snd_mixer_selem_channel_id_t ch, long vol_db);
+gboolean          sm_channel_volume_get_range_db(SmChannel *self, gdouble *min_db, gdouble *max_db);
+gboolean          sm_channel_volume_get_db(SmChannel *self, snd_mixer_selem_channel_id_t ch, gdouble *vol_db);
+gboolean          sm_channel_volume_set_db(SmChannel *self, snd_mixer_selem_channel_id_t ch, gdouble vol_db);
 gboolean          sm_channel_volume_get_mute(SmChannel *self, snd_mixer_selem_channel_id_t ch, int *mute);
 gboolean          sm_channel_volume_set_mute(SmChannel *self, snd_mixer_selem_channel_id_t ch, int mute);
 

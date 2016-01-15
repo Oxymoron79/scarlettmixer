@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "sm-channel.h"
 
 struct _SmChannel
@@ -469,54 +471,62 @@ sm_channel_has_volume_mute(SmChannel *self, snd_mixer_selem_channel_id_t ch)
 }
 
 gboolean
-sm_channel_volume_get_range_db(SmChannel *self, long *min_db, long *max_db)
+sm_channel_volume_get_range_db(SmChannel *self, gdouble *min_db, gdouble *max_db)
 {
     int err;
+    long min_value;
+    long max_value;
 
     if (self->volume == NULL)
         {
         g_warning("sm_channel_volume_get_range_db: Cannot get volume range in dB!");
         return FALSE;
     }
-    err = snd_mixer_selem_get_playback_dB_range(self->volume, min_db, max_db);
+    err = snd_mixer_selem_get_playback_dB_range(self->volume, &min_value, &max_value);
     if (err < 0)
     {
         g_warning("sm_channel_volume_get_range_db: Cannot get volume range in dB!");
         return FALSE;
     }
+    *min_db = (gdouble)min_value / 100.0;
+    *max_db = (gdouble)max_value / 100.0;
     return TRUE;
 }
 
 gboolean
-sm_channel_volume_get_db(SmChannel *self, snd_mixer_selem_channel_id_t ch, long *vol_db)
+sm_channel_volume_get_db(SmChannel *self, snd_mixer_selem_channel_id_t ch, gdouble *vol_db)
 {
     int err;
+    long value;
 
     if (!sm_channel_has_volume(self, ch))
     {
         g_warning("sm_channel_volume_get_db: Cannot get volume in dB!");
         return FALSE;
     }
-    err = snd_mixer_selem_get_playback_dB(self->volume, ch, vol_db);
+    err = snd_mixer_selem_get_playback_dB(self->volume, ch, &value);
     if (err < 0)
     {
         g_warning("sm_channel_volume_get_range_db: Cannot get volume in dB!");
         return FALSE;
     }
+    *vol_db = (gdouble)value / 100.0;
     return TRUE;
 }
 
 gboolean
-sm_channel_volume_set_db(SmChannel *self, snd_mixer_selem_channel_id_t ch, long vol_db)
+sm_channel_volume_set_db(SmChannel *self, snd_mixer_selem_channel_id_t ch, gdouble vol_db)
 {
     int err;
+    long value;
 
     if (!sm_channel_has_volume(self, ch))
     {
         g_warning("sm_channel_volume_set_db: Cannot set volume in dB!");
         return FALSE;
     }
-    err = snd_mixer_selem_set_playback_dB(self->volume, ch, (long)vol_db * 100, -1);
+    value = (long)round(vol_db * 100.0);
+    err = snd_mixer_selem_set_playback_dB(self->volume, ch, value, -1);
     if (err < 0)
     {
         g_warning("sm_channel_volume_set_range_db: Cannot set volume in dB!");

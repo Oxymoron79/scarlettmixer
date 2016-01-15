@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <math.h>
 
 #include "scarlettmixerstrip.h"
 
@@ -32,6 +33,16 @@ struct _ScarlettMixerStripPrivate
 
 G_DEFINE_TYPE_WITH_PRIVATE(ScarlettMixerStrip, sm_strip, GTK_TYPE_BOX);
 
+static gdouble
+vol_to_value(gdouble vol_db) {
+    return pow(10, vol_db / 60.0);
+}
+
+static gdouble
+value_to_vol(gdouble value) {
+    return 60.0*log10(value);
+}
+
 static void
 scale_source_comboboxtext_changed_cb(GtkComboBox *combo,
         gpointer     user_data)
@@ -54,7 +65,7 @@ scale_format_value_cb(GtkScale *scale,
         gdouble value)
 {
     return g_strdup_printf("%0.*f dB",
-            gtk_scale_get_digits(scale), value);
+            gtk_scale_get_digits(scale), value_to_vol(value));
 }
 
 static void
@@ -63,23 +74,25 @@ scale_value_changed_cb(GtkRange *range, gpointer user_data)
     ScarlettMixerStripPrivate *priv;
     GtkRange *other_range;
     gdouble value;
+    gdouble vol_db;
     gboolean joined;
     int err;
     snd_mixer_selem_channel_id_t ch;
 
     priv = sm_strip_get_instance_private(user_data);
     value = gtk_range_get_value(range);
+    vol_db = value_to_vol(value);
     if(GTK_WIDGET(range) == GTK_WIDGET(priv->left_scale)) {
-        g_debug("scale_value_changed_cb: Left - %f dB", value);
+        g_debug("scale_value_changed_cb: Left - %f dB", vol_db);
         ch = SND_MIXER_SCHN_FRONT_LEFT;
         other_range = GTK_RANGE(priv->right_scale);
     }
     if(GTK_WIDGET(range) == GTK_WIDGET(priv->right_scale)) {
-        g_debug("scale_value_changed_cb: Right - %f dB", value);
+        g_debug("scale_value_changed_cb: Right - %f dB", vol_db);
         ch = SND_MIXER_SCHN_FRONT_RIGHT;
         other_range = GTK_RANGE(priv->left_scale);
     }
-    if(!sm_channel_volume_set_db(priv->channel, ch, (long)value))
+    if(!sm_channel_volume_set_db(priv->channel, ch, vol_db))
     {
         g_warning("scale_value_changed_cb: Cannot set volume in dB.");
     }
@@ -121,7 +134,7 @@ static void
 sm_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
 {
     ScarlettMixerStripPrivate *priv;
-    long vol_db;
+    gdouble vol_db;
     int mute;
     int idx;
 
@@ -148,7 +161,7 @@ sm_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
     if (sm_channel_has_volume(priv->channel, SND_MIXER_SCHN_FRONT_LEFT))
     {
         sm_channel_volume_get_db(priv->channel, SND_MIXER_SCHN_FRONT_LEFT, &vol_db);
-        gtk_range_set_value(GTK_RANGE(priv->left_scale), vol_db / 100);
+        gtk_range_set_value(GTK_RANGE(priv->left_scale), vol_to_value(vol_db));
         if (sm_channel_has_volume_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT))
         {
             // Get mute state: 0 = Muted, 1 = Unmuted
@@ -160,7 +173,7 @@ sm_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
     if (sm_channel_has_volume(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT))
     {
         sm_channel_volume_get_db(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT, &vol_db);
-        gtk_range_set_value(GTK_RANGE(priv->right_scale), vol_db / 100);
+        gtk_range_set_value(GTK_RANGE(priv->right_scale), vol_to_value(vol_db));
         if (sm_channel_has_volume_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT))
         {
             // Get mute state: 0 = Muted, 1 = Unmuted
@@ -214,7 +227,7 @@ sm_strip_new(SmChannel *channel)
     ScarlettMixerStrip *strip;
     ScarlettMixerStripPrivate *priv;
     GList *list;
-    long vol_db, min_db, max_db;
+    gdouble vol_db, min_db, max_db;
     int err, mute;
     int idx;
 
@@ -224,52 +237,62 @@ sm_strip_new(SmChannel *channel)
 
     gtk_label_set_label(priv->name_label, sm_channel_get_display_name(priv->channel));
 
-    if (sm_channel_has_source(priv->channel, SND_MIXER_SCHN_FRONT_LEFT)) {
+    if (sm_channel_has_source(priv->channel, SND_MIXER_SCHN_FRONT_LEFT))
+    {
         list = sm_channel_source_get_item_names(priv->channel, SND_MIXER_SCHN_FRONT_LEFT);
-        for(list = g_list_first(list); list; list = g_list_next(list)) {
+        for(list = g_list_first(list); list; list = g_list_next(list))
+        {
             gtk_combo_box_text_append_text(priv->left_scale_source_comboboxtext, list->data);
         }
         idx = sm_channel_source_get_selected_item_index(priv->channel, SND_MIXER_SCHN_FRONT_LEFT);
-        if (idx < 0) {
+        if (idx < 0)
+        {
             g_warning("Could not get selected item!");
         }
-        else {
+        else
+        {
             gtk_combo_box_set_active(GTK_COMBO_BOX(priv->left_scale_source_comboboxtext), idx);
         }
     }
-    else {
+    else
+    {
         gtk_widget_set_visible(GTK_WIDGET(priv->left_scale_source_comboboxtext), FALSE);
     }
-    if (sm_channel_has_source(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT)) {
+    if (sm_channel_has_source(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT))
+    {
         list = sm_channel_source_get_item_names(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT);
-        for(list = g_list_first(list); list; list = g_list_next(list)) {
+        for(list = g_list_first(list); list; list = g_list_next(list))
+        {
             gtk_combo_box_text_append_text(priv->right_scale_source_comboboxtext, list->data);
         }
         idx = sm_channel_source_get_selected_item_index(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT);
-        if (idx < 0) {
+        if (idx < 0)
+        {
             g_warning("Could not get selected item!");
         }
-        else {
+        else
+        {
             gtk_combo_box_set_active(GTK_COMBO_BOX(priv->right_scale_source_comboboxtext), idx);
         }
     }
-    else {
+    else
+    {
         gtk_widget_set_visible(GTK_WIDGET(priv->right_scale_source_comboboxtext), FALSE);
     }
 
     if (sm_channel_volume_get_range_db(priv->channel, &min_db, &max_db))
     {
-        gtk_adjustment_set_lower(priv->left_adjustment, min_db / 100);
-        gtk_adjustment_set_upper(priv->left_adjustment, max_db / 100);
+        gtk_adjustment_set_lower(priv->left_adjustment, vol_to_value(min_db));
+        gtk_adjustment_set_upper(priv->left_adjustment, vol_to_value(max_db));
     }
 
     if (sm_channel_has_volume(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT))
     {
-        gtk_adjustment_set_lower(priv->right_adjustment, min_db / 100);
-        gtk_adjustment_set_upper(priv->right_adjustment, max_db / 100);
+        gtk_adjustment_set_lower(priv->right_adjustment, vol_to_value(min_db));
+        gtk_adjustment_set_upper(priv->right_adjustment, vol_to_value(max_db));
 
         sm_channel_volume_get_db(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT, &vol_db);
-        gtk_range_set_value(GTK_RANGE(priv->right_scale), vol_db / 100);
+        gtk_range_set_value(GTK_RANGE(priv->right_scale), vol_to_value(vol_db));
         if (sm_channel_has_volume_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT))
         {
             // Get mute state: 0 = Muted, 1 = Unmuted
@@ -281,7 +304,8 @@ sm_strip_new(SmChannel *channel)
             gtk_widget_set_visible(GTK_WIDGET(priv->mute_togglebutton), FALSE);
         }
     }
-    else {
+    else
+    {
         gtk_widget_set_visible(GTK_WIDGET(priv->right_scale_box), FALSE);
         gtk_widget_set_visible(GTK_WIDGET(priv->join_togglebutton), FALSE);
     }
@@ -289,7 +313,7 @@ sm_strip_new(SmChannel *channel)
     if (sm_channel_has_volume(priv->channel, SND_MIXER_SCHN_FRONT_LEFT))
     {
         sm_channel_volume_get_db(priv->channel, SND_MIXER_SCHN_FRONT_LEFT, &vol_db);
-        gtk_range_set_value(GTK_RANGE(priv->left_scale), vol_db / 100);
+        gtk_range_set_value(GTK_RANGE(priv->left_scale), vol_to_value(vol_db));
         if (sm_channel_has_volume_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT))
         {
             // Get mute state: 0 = Muted, 1 = Unmuted
@@ -310,10 +334,9 @@ static void
 sm_strip_init(ScarlettMixerStrip *win)
 {
     ScarlettMixerStripPrivate *priv;
-    long db_val;
 
     priv = sm_strip_get_instance_private(win);
     gtk_widget_init_template(GTK_WIDGET(win));
-    gtk_scale_add_mark(priv->left_scale, 0, GTK_POS_RIGHT, "0");
-    gtk_scale_add_mark(priv->right_scale, 0, GTK_POS_LEFT, "0");
+    gtk_scale_add_mark(priv->left_scale, vol_to_value(0.0), GTK_POS_RIGHT, "0");
+    gtk_scale_add_mark(priv->right_scale, vol_to_value(0.0), GTK_POS_LEFT, "0");
 }

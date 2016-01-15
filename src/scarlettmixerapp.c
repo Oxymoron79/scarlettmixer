@@ -289,8 +289,8 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
                     g_debug("Created channel for mixer element %s.", snd_mixer_selem_get_name(elem));
                     g_debug("    Type: %d.", sm_channel_get_channel_type(ch));
                     g_debug("    Name: %s.", sm_channel_get_name(ch));
-                    g_debug("    Has left channel: %s.", sm_channel_has_volume(ch, SND_MIXER_SCHN_FRONT_LEFT));
-                    g_debug("    Has right channel: %s.", sm_channel_has_volume(ch, SND_MIXER_SCHN_FRONT_RIGHT));
+                    g_debug("    Has left channel: %d.", sm_channel_has_volume(ch, SND_MIXER_SCHN_FRONT_LEFT));
+                    g_debug("    Has right channel: %d.", sm_channel_has_volume(ch, SND_MIXER_SCHN_FRONT_RIGHT));
                     app->channels = g_list_append(app->channels, ch);
                 }
                 else
