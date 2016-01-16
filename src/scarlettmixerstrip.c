@@ -188,6 +188,19 @@ sm_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
 static void
 sm_strip_class_init(ScarlettMixerStripClass *class)
 {
+    GtkCssProvider *provider;
+    GdkDisplay *display;
+    GdkScreen *screen;
+
+    provider = gtk_css_provider_new();
+    display = gdk_display_get_default();
+    screen = gdk_display_get_default_screen(display);
+    gtk_style_context_add_provider_for_screen(screen,
+            GTK_STYLE_PROVIDER(provider),
+            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    gtk_css_provider_load_from_resource(GTK_CSS_PROVIDER(provider),
+            "/org/alsa/scarlettmixer/scarlettmixerstrip.css");
+    g_object_unref(provider);
     gtk_widget_class_set_template_from_resource(GTK_WIDGET_CLASS(class),
             "/org/alsa/scarlettmixer/scarlettmixerstrip.ui");
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
@@ -254,16 +267,7 @@ sm_strip_new(SmChannel *channel)
         list = sm_channel_source_get_item_names(priv->channel, SND_MIXER_SCHN_FRONT_LEFT);
         for(list = g_list_first(list); list; list = g_list_next(list))
         {
-            gchar name[16];
-            gchar num[3];
-            if (sscanf(list->data, "%s %s", name, num) == 2)
-            {
-                gtk_combo_box_text_append_text(priv->left_scale_source_comboboxtext, g_strdup_printf("%c %s", name[0], num));
-            }
-            else
-            {
-                gtk_combo_box_text_append_text(priv->left_scale_source_comboboxtext, g_strdup(name));
-            }
+            gtk_combo_box_text_append_text(priv->left_scale_source_comboboxtext, g_strdup(list->data));
         }
         idx = sm_channel_source_get_selected_item_index(priv->channel, SND_MIXER_SCHN_FRONT_LEFT);
         if (idx < 0)
@@ -284,16 +288,7 @@ sm_strip_new(SmChannel *channel)
         list = sm_channel_source_get_item_names(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT);
         for(list = g_list_first(list); list; list = g_list_next(list))
         {
-            gchar name[16];
-            gchar num[3];
-            if (sscanf(list->data, "%s %s", name, num) == 2)
-            {
-                gtk_combo_box_text_append_text(priv->right_scale_source_comboboxtext, g_strdup_printf("%c %s", name[0], num));
-            }
-            else
-            {
-                gtk_combo_box_text_append_text(priv->right_scale_source_comboboxtext, g_strdup(name));
-            }
+            gtk_combo_box_text_append_text(priv->right_scale_source_comboboxtext, g_strdup(list->data));
         }
         idx = sm_channel_source_get_selected_item_index(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT);
         if (idx < 0)

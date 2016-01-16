@@ -3,5 +3,6 @@
   <gresource prefix="/org/alsa/scarlettmixer">
     <file preprocess="xml-stripblanks">scarlettmixerappwin.ui</file>
     <file preprocess="xml-stripblanks">scarlettmixerstrip.ui</file>
+    <file>scarlettmixerstrip.css</file>
   </gresource>
 </gresources>

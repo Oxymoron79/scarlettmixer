@@ -1,0 +1,29 @@
+.small-text {
+    font-size: x-small;
+}
+
+.small-button {
+    padding: 2pt;
+}
+
+/* Set colors of levelbar */
+.level-bar.fill-block {
+    border: 1px solid #5ec62a;
+    background-color: #7ad94a;
+}
+
+.level-bar.fill-block.empty-fill-block {
+    border-color: rgba(46, 52, 54, 0.2);
+    background-color: transparent;
+}
+
+.level-bar.fill-block.level-low {
+    border-color: #2a76c6;
+    background-color: #4a90d9;
+}
+
+.level-bar.fill-block.level-high {
+    border-color: #c26000;
+    background-color: #f57900;
+}
+
