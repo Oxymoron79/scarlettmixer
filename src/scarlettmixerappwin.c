@@ -1,6 +1,5 @@
 #include <gtk/gtk.h>
 
-#include "scarlettmixer.h"
 #include "scarlettmixerapp.h"
 #include "scarlettmixerappwin.h"
 #include "scarlettmixerstrip.h"

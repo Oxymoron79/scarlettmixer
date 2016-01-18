@@ -13,47 +13,6 @@ G_DEFINE_TYPE(SmSource, sm_source, G_TYPE_OBJECT)
 
 enum
 {
-    N_PROPERTIES = 1
-};
-
-static GParamSpec *sm_source_properties[N_PROPERTIES] = {NULL};
-
-static void
-sm_source_set_property(GObject      *object,
-                           guint         property_id,
-                           const GValue *value,
-                           GParamSpec   *pspec)
-{
-    SmSource *self = SM_SOURCE(object);
-
-    switch(property_id)
-    {
-        default:
-            /* We don't have any other property... */
-            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
-            break;
-    }
-}
-
-static void
-sm_source_get_property(GObject    *object,
-                           guint       property_id,
-                           GValue     *value,
-                           GParamSpec *pspec)
-{
-  SmSource *self = SM_SOURCE(object);
-
-    switch(property_id)
-    {
-        default:
-            /* We don't have any other property... */
-            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
-            break;
-    }
-}
-
-enum
-{
     SM_SOURCE_SIGNAL_CHANGED,
     N_SIGNALS
 };
@@ -100,14 +59,6 @@ sm_source_class_init(SmSourceClass *klass)
     /* init destruction methods */
     object_class->dispose = sm_source_dispose;
     object_class->finalize = sm_source_finalize;
-
-    /* init properties */
-    object_class->set_property = sm_source_set_property;
-    object_class->get_property = sm_source_get_property;
-
-    g_object_class_install_properties(object_class,
-                                      N_PROPERTIES,
-                                      sm_source_properties);
 
     /* init signals */
     sm_source_signals[SM_SOURCE_SIGNAL_CHANGED] =

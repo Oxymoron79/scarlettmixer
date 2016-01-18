@@ -22,47 +22,6 @@ G_DEFINE_TYPE(SmChannel, sm_channel, G_TYPE_OBJECT)
 
 enum
 {
-    N_PROPERTIES = 1
-};
-
-static GParamSpec *sm_channel_properties[N_PROPERTIES] = {NULL};
-
-static void
-sm_channel_set_property(GObject      *object,
-                           guint         property_id,
-                           const GValue *value,
-                           GParamSpec   *pspec)
-{
-    SmChannel *self = SM_CHANNEL(object);
-
-    switch (property_id)
-    {
-        default:
-            /* We don't have any other property... */
-            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
-            break;
-    }
-}
-
-static void
-sm_channel_get_property(GObject    *object,
-                           guint       property_id,
-                           GValue     *value,
-                           GParamSpec *pspec)
-{
-  SmChannel *self = SM_CHANNEL(object);
-
-  switch(property_id)
-  {
-    default:
-      /* We don't have any other property... */
-      G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
-      break;
-  }
-}
-
-enum
-{
     SM_CHANNEL_SIGNAL_CHANGED,
     N_SIGNALS
 };
@@ -111,14 +70,6 @@ sm_channel_class_init(SmChannelClass *klass)
     object_class->dispose = sm_channel_dispose;
     object_class->finalize = sm_channel_finalize;
 
-    /* init properties */
-    object_class->set_property = sm_channel_set_property;
-    object_class->get_property = sm_channel_get_property;
-
-    g_object_class_install_properties(object_class,
-                                      N_PROPERTIES,
-                                      sm_channel_properties);
-
     /* init signals */
     sm_channel_signals[SM_CHANNEL_SIGNAL_CHANGED] =
         g_signal_newv("changed",
@@ -156,13 +107,13 @@ sm_channel_get_channel_type(SmChannel *self)
 const gchar *
 sm_channel_get_name(SmChannel *self)
 {
-    return g_strdup(self->name);
+    return self->name;
 }
 
 const gchar *
 sm_channel_get_display_name(SmChannel *self)
 {
-    return g_strdup(self->display_name);
+    return self->display_name;
 }
 
 unsigned int

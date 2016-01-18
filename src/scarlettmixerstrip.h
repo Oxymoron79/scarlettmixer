@@ -3,7 +3,6 @@
 
 #include <gtk/gtk.h>
 
-#include "scarlettmixer.h"
 #include "sm-channel.h"
 
 
@@ -15,7 +14,7 @@ typedef struct _ScarlettMixerStrip         ScarlettMixerStrip;
 typedef struct _ScarlettMixerStripClass    ScarlettMixerStripClass;
 
 
-GType               sm_strip_get_type     (void);
-ScarlettMixerStrip *sm_strip_new          (SmChannel *channel);
+GType               sm_strip_get_type(void);
+ScarlettMixerStrip *sm_strip_new(SmChannel *channel);
 
 #endif /* __SCARLETTMIXERSTRIP_H */
