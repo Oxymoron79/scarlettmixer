@@ -26,12 +26,48 @@ struct _ScarlettMixerApp
 G_DEFINE_TYPE(ScarlettMixerApp, sm_app, GTK_TYPE_APPLICATION);
 
 static void
+about_activated(GSimpleAction *action,
+        GVariant *parameter,
+        gpointer app)
+{
+    GList *windows = NULL;
+    const gchar *authors[2];
+    authors[0] = "Martin Rösch <martin.roesch79@gmail.com>";
+    authors[1] = NULL;
+
+    g_debug("about_activated");
+    windows = gtk_application_get_windows(GTK_APPLICATION(app));
+    gtk_show_about_dialog(GTK_WINDOW(g_list_first(windows)->data),
+            "authors", authors,
+            "version", PACKAGE_VERSION,
+            "comments", "Mixer for the Scarlett USB audio interfaces.",
+            "copyright", "Copyright 2016 - Martin Rösch",
+            "license-type", GTK_LICENSE_GPL_3_0,
+            NULL);
+}
+
+static void
+quit_activated(GSimpleAction *action,
+        GVariant *parameter,
+        gpointer app)
+{
+  g_application_quit(G_APPLICATION(app));
+}
+
+static GActionEntry app_actions[] =
+{
+    { "about", about_activated, NULL, NULL, NULL },
+    { "quit", quit_activated, NULL, NULL, NULL }
+};
+
+static void
 sm_app_activate (GApplication *app)
 {
     ScarlettMixerAppWindow *win;
     ScarlettMixerApp *sm_app;
 
     g_debug("sm_app_activate.");
+
     sm_app = SCARLETTMIXER_APP(app);
     win = sm_app_window_new(SCARLETTMIXER_APP(app), sm_app->card_name);
     gtk_window_present(GTK_WINDOW(win));
@@ -63,11 +99,41 @@ sm_app_open (GApplication  *app,
 }
 
 static void
+sm_app_startup (GApplication *app)
+{
+    ScarlettMixerApp *sm_app;
+    GtkBuilder *builder;
+    GMenuModel *app_menu;
+    const gchar *quit_accels[2] = { "<Ctrl>Q", NULL };
+
+    g_debug("sm_app_startup.");
+    sm_app = SCARLETTMIXER_APP(app);
+
+    G_APPLICATION_CLASS(sm_app_parent_class)->startup(app);
+
+    g_action_map_add_action_entries (G_ACTION_MAP(app),
+            app_actions,
+            G_N_ELEMENTS(app_actions),
+            app);
+  gtk_application_set_accels_for_action (GTK_APPLICATION(app),
+          "app.quit",
+          quit_accels);
+
+    builder = gtk_builder_new_from_resource("/org/alsa/scarlettmixer/scarlettmixermenu.ui");
+    app_menu = G_MENU_MODEL(gtk_builder_get_object(builder, "app_menu"));
+    gtk_application_set_app_menu(GTK_APPLICATION(app), app_menu);
+    g_object_unref (builder);
+}
+
+static void
 sm_app_class_init (ScarlettMixerAppClass *class)
 {
     g_debug("sm_app_class_init.");
+    g_set_prgname("Scarlett Mixer");
+    g_set_application_name("Scarlett Mixer");
     G_APPLICATION_CLASS(class)->activate = sm_app_activate;
     G_APPLICATION_CLASS(class)->open = sm_app_open;
+    G_APPLICATION_CLASS(class)->startup = sm_app_startup;
 }
 
 static int

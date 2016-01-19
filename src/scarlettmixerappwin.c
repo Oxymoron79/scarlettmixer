@@ -35,6 +35,19 @@ G_DEFINE_TYPE_WITH_PRIVATE(ScarlettMixerAppWindow, sm_app_window,
 static void
 sm_app_window_class_init(ScarlettMixerAppWindowClass *class)
 {
+    GtkCssProvider *provider;
+    GdkDisplay *display;
+    GdkScreen *screen;
+
+    provider = gtk_css_provider_new();
+    display = gdk_display_get_default();
+    screen = gdk_display_get_default_screen(display);
+    gtk_style_context_add_provider_for_screen(screen,
+            GTK_STYLE_PROVIDER(provider),
+            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    gtk_css_provider_load_from_resource(GTK_CSS_PROVIDER(provider),
+            "/org/alsa/scarlettmixer/scarlettmixer.css");
+    g_object_unref(provider);
     g_debug("sm_app_window_class_init.");
     gtk_widget_class_set_template_from_resource(GTK_WIDGET_CLASS(class),
             "/org/alsa/scarlettmixer/scarlettmixerappwin.ui");
@@ -130,7 +143,8 @@ sm_app_window_new(ScarlettMixerApp *app, const gchar* card_name)
                     gtk_widget_set_margin_bottom(GTK_WIDGET(box), 5);
                     gtk_widget_set_name(GTK_WIDGET(box), g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch)));
                     priv->mix_pages = g_list_append(priv->mix_pages, box);
-                    idx = gtk_notebook_append_page(priv->output_mix_notebook, GTK_WIDGET(box), gtk_label_new(g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch))));
+                    label = GTK_LABEL(gtk_label_new(g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch))));
+                    idx = gtk_notebook_append_page(priv->output_mix_notebook, GTK_WIDGET(box), GTK_WIDGET(label));
                 }
                 else
                 {
@@ -153,8 +167,8 @@ sm_app_window_new(ScarlettMixerApp *app, const gchar* card_name)
     for (list = g_list_first(sm_app_get_input_sources(priv->app)); list; list = g_list_next(list))
     {
         SmSource *src = SM_SOURCE(list->data);
-        box = (GtkBox*)gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-        label = (GtkLabel*)gtk_label_new(sm_source_get_name(src));
+        box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+        label = GTK_LABEL(gtk_label_new(sm_source_get_name(src)));
         gtk_box_pack_start(box, GTK_WIDGET(label), FALSE, FALSE, 0);
         comboboxtext = (GtkComboBoxText*)gtk_combo_box_text_new();
         for (item = g_list_first(sm_source_get_item_names(src)); item; item = g_list_next(item))

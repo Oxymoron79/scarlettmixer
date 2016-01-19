@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/org/alsa/scarlettmixer">
+    <file preprocess="xml-stripblanks">scarlettmixermenu.ui</file>
     <file preprocess="xml-stripblanks">scarlettmixerappwin.ui</file>
     <file preprocess="xml-stripblanks">scarlettmixerstrip.ui</file>
+    <file>scarlettmixer.css</file>
     <file>scarlettmixerstrip.css</file>
   </gresource>
 </gresources>

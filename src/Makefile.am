@@ -13,6 +13,6 @@ scarlettmixer_SOURCES=							\
 
 BUILT_SOURCES = scarlettmixerresources.c
 
-scarlettmixerresources.c: scarlettmixerapp.gresource.xml scarlettmixerappwin.ui scarlettmixerstrip.ui
+scarlettmixerresources.c: scarlettmixerapp.gresource.xml scarlettmixerappwin.ui scarlettmixerstrip.ui scarlettmixermenu.ui
 	$(AM_V_GEN) glib-compile-resources $(srcdir)/scarlettmixerapp.gresource.xml \
 		--target=$@ --sourcedir=$(srcdir) --generate-source
