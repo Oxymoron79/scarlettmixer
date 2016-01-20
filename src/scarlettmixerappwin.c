@@ -170,7 +170,7 @@ sm_app_window_new(ScarlettMixerApp *app, const gchar* card_name)
         box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
         label = GTK_LABEL(gtk_label_new(sm_source_get_name(src)));
         gtk_box_pack_start(box, GTK_WIDGET(label), FALSE, FALSE, 0);
-        comboboxtext = (GtkComboBoxText*)gtk_combo_box_text_new();
+        comboboxtext = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
         for (item = g_list_first(sm_source_get_item_names(src)); item; item = g_list_next(item))
         {
             gtk_combo_box_text_append_text(comboboxtext, item->data);
@@ -186,7 +186,7 @@ sm_app_window_new(ScarlettMixerApp *app, const gchar* card_name)
         g_signal_connect(src, "changed", G_CALLBACK(sm_app_window_source_changed_cb), comboboxtext);
         gtk_box_pack_start(box, GTK_WIDGET(comboboxtext), FALSE, FALSE, 0);
 
-        gtk_box_pack_start(priv->input_sources_box, GTK_WIDGET(box), FALSE, FALSE, 5);
+        gtk_box_pack_start(priv->input_sources_box, GTK_WIDGET(box), FALSE, FALSE, 2);
     }
     gtk_widget_show_all(GTK_WIDGET(priv->input_sources_box));
     return win;

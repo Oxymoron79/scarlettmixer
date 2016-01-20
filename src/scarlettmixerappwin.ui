@@ -7,140 +7,87 @@
     <property name="default_width">800</property>
     <property name="default_height">450</property>
     <child>
-      <object class="GtkStack" id="main_stack">
+      <object class="GtkBox" id="output_box">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="margin_left">5</property>
         <property name="margin_right">5</property>
-        <property name="margin_top">5</property>
         <property name="margin_bottom">5</property>
-        <property name="transition_type">slide-left-right</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">5</property>
         <child>
-          <object class="GtkBox" id="output_box">
+          <object class="GtkExpander" id="input_sources_expander">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">5</property>
+            <property name="can_focus">True</property>
             <child>
-              <object class="GtkNotebook" id="output_mix_notebook">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkViewport" id="output_viewport">
-                <property name="name">output-viewport</property>
+              <object class="GtkViewport" id="input_sources_viewport">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkBox" id="output_channel_box">
+                  <object class="GtkBox" id="input_sources_box">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_left">5</property>
                     <property name="margin_right">5</property>
                     <property name="margin_top">5</property>
                     <property name="margin_bottom">5</property>
-                    <property name="spacing">2</property>
                     <child>
                       <placeholder/>
                     </child>
                   </object>
                 </child>
               </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
+            </child>
+            <child type="label">
+              <object class="GtkLabel" id="input_sources_expander_label">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Input Sources</property>
+                <property name="ellipsize">start</property>
+              </object>
             </child>
           </object>
           <packing>
-            <property name="name">output_page</property>
-            <property name="title" translatable="yes">Output</property>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="input_box">
+          <object class="GtkNotebook" id="output_mix_notebook">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkViewport" id="output_viewport">
+            <property name="name">output-viewport</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">10</property>
             <child>
-              <object class="GtkFrame" id="input_sources_frame">
+              <object class="GtkBox" id="output_channel_box">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label_xalign">0</property>
-                <property name="shadow_type">in</property>
+                <property name="margin_left">5</property>
+                <property name="margin_right">5</property>
+                <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
+                <property name="spacing">2</property>
                 <child>
-                  <object class="GtkBox" id="input_sources_box">
-                    <property name="width_request">220</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="margin_left">5</property>
-                    <property name="margin_right">5</property>
-                    <property name="margin_bottom">5</property>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                </child>
-                <child type="label">
-                  <object class="GtkLabel" id="input_sources_label">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Input Sources</property>
-                  </object>
+                  <placeholder/>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkFrame" id="input_switches_frame">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label_xalign">0</property>
-                <property name="shadow_type">in</property>
-                <child>
-                  <object class="GtkBox" id="input_switches_box">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="margin_left">5</property>
-                    <property name="margin_right">5</property>
-                    <property name="margin_bottom">5</property>
-                    <property name="orientation">vertical</property>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                </child>
-                <child type="label">
-                  <object class="GtkLabel" id="input_switches_label">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Input Switches</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
             </child>
           </object>
           <packing>
-            <property name="name">input_page</property>
-            <property name="title" translatable="yes">Input</property>
-            <property name="position">1</property>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>
@@ -150,17 +97,7 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="show_close_button">True</property>
-        <child>
-          <object class="GtkLabel" id="card_label">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Card:</property>
-            <attributes>
-              <attribute name="weight" value="bold"/>
-            </attributes>
-          </object>
-        </child>
-        <child>
+        <child type="title">
           <object class="GtkLabel" id="card_name_label">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -169,21 +106,19 @@
               <attribute name="weight" value="bold"/>
             </attributes>
           </object>
-          <packing>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child type="title">
-          <object class="GtkStackSwitcher" id="main_stackswitcher">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="stack">main_stack</property>
-          </object>
-          <packing>
-            <property name="position">2</property>
-          </packing>
         </child>
       </object>
     </child>
   </template>
+  <object class="GtkBox" id="input_switches_box">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="margin_left">5</property>
+    <property name="margin_right">5</property>
+    <property name="margin_bottom">5</property>
+    <property name="orientation">vertical</property>
+    <child>
+      <placeholder/>
+    </child>
+  </object>
 </interface>

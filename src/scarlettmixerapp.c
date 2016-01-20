@@ -69,7 +69,7 @@ sm_app_activate (GApplication *app)
     g_debug("sm_app_activate.");
 
     sm_app = SCARLETTMIXER_APP(app);
-    win = sm_app_window_new(SCARLETTMIXER_APP(app), sm_app->card_name);
+    win = sm_app_window_new(sm_app, sm_app->card_name);
     gtk_window_present(GTK_WINDOW(win));
 }
 
