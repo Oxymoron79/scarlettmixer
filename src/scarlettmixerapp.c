@@ -31,13 +31,16 @@ about_activated(GSimpleAction *action,
         gpointer app)
 {
     GList *windows = NULL;
+    GtkWindow *win;
     const gchar *authors[2];
     authors[0] = "Martin Rösch <martin.roesch79@gmail.com>";
     authors[1] = NULL;
 
     g_debug("about_activated");
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
-    gtk_show_about_dialog(GTK_WINDOW(g_list_first(windows)->data),
+    win = GTK_WINDOW(g_list_first(windows)->data);
+    gtk_show_about_dialog(win,
+            "logo", gtk_window_get_icon(win),
             "authors", authors,
             "version", PACKAGE_VERSION,
             "comments", "Mixer for the Scarlett USB audio interfaces.",
