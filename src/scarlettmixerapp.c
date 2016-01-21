@@ -75,6 +75,7 @@ sm_app_activate(GApplication *app)
 
     g_debug("sm_app_activate.");
 
+    g_application_mark_busy(G_APPLICATION(app));
     sm_app = SCARLETTMIXER_APP(app);
     win = sm_app_window_new(sm_app, prefix);
     gtk_window_present(GTK_WINDOW(win));

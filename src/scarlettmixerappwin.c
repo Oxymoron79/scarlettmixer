@@ -47,6 +47,7 @@ sm_app_window_check_for_interface(ScarlettMixerAppWindow *win)
     const gchar *card_name;
 
     priv = sm_app_window_get_instance_private(win);
+    g_application_unmark_busy(G_APPLICATION(priv->app));
     card_number = sm_app_find_card(priv->prefix);
     if (card_number >= 0)
     {
