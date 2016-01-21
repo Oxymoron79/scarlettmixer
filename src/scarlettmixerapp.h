@@ -13,6 +13,8 @@ typedef struct _ScarlettMixerAppClass  ScarlettMixerAppClass;
 
 GType             sm_app_get_type();
 ScarlettMixerApp* sm_app_new();
+gint              sm_app_find_card(const gchar* prefix);
+const gchar*      sm_app_open_mixer(ScarlettMixerApp *app, int card_number);
 GList*            sm_app_get_channels(ScarlettMixerApp *app);
 GList*            sm_app_get_input_sources(ScarlettMixerApp *app);
 

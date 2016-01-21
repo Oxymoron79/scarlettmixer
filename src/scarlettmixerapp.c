@@ -25,6 +25,10 @@ struct _ScarlettMixerApp
 
 G_DEFINE_TYPE(ScarlettMixerApp, sm_app, GTK_TYPE_APPLICATION);
 
+static const gchar *prefix_scarlett = "Scarlett";
+static const gchar *prefix_intel = "HDA Intel";
+static const gchar *prefix = "Scarlett";
+
 static void
 about_activated(GSimpleAction *action,
         GVariant *parameter,
@@ -64,7 +68,7 @@ static GActionEntry app_actions[] =
 };
 
 static void
-sm_app_activate (GApplication *app)
+sm_app_activate(GApplication *app)
 {
     ScarlettMixerAppWindow *win;
     ScarlettMixerApp *sm_app;
@@ -72,12 +76,12 @@ sm_app_activate (GApplication *app)
     g_debug("sm_app_activate.");
 
     sm_app = SCARLETTMIXER_APP(app);
-    win = sm_app_window_new(sm_app, sm_app->card_name);
+    win = sm_app_window_new(sm_app, prefix);
     gtk_window_present(GTK_WINDOW(win));
 }
 
 static void
-sm_app_open (GApplication  *app,
+sm_app_open(GApplication *app,
         GFile **files,
         gint n_files,
         const gchar *hint)
@@ -93,7 +97,7 @@ sm_app_open (GApplication  *app,
     if (windows)
         win = SCARLETTMIXER_APP_WINDOW(windows->data);
     else
-        win = sm_app_window_new(SCARLETTMIXER_APP(app), sm_app->card_name);
+        win = sm_app_window_new(SCARLETTMIXER_APP(app), prefix);
 
     for (i = 0; i < n_files; i++)
         sm_app_window_open(win, files[i]);
@@ -102,7 +106,7 @@ sm_app_open (GApplication  *app,
 }
 
 static void
-sm_app_startup (GApplication *app)
+sm_app_startup(GApplication *app)
 {
     ScarlettMixerApp *sm_app;
     GtkBuilder *builder;
@@ -114,11 +118,11 @@ sm_app_startup (GApplication *app)
 
     G_APPLICATION_CLASS(sm_app_parent_class)->startup(app);
 
-    g_action_map_add_action_entries (G_ACTION_MAP(app),
+    g_action_map_add_action_entries(G_ACTION_MAP(app),
             app_actions,
             G_N_ELEMENTS(app_actions),
             app);
-  gtk_application_set_accels_for_action (GTK_APPLICATION(app),
+    gtk_application_set_accels_for_action(GTK_APPLICATION(app),
           "app.quit",
           quit_accels);
 
@@ -129,7 +133,18 @@ sm_app_startup (GApplication *app)
 }
 
 static void
-sm_app_class_init (ScarlettMixerAppClass *class)
+sm_app_shutdown(GApplication *app)
+{
+    ScarlettMixerApp *sm_app;
+
+    g_debug("sm_app_shutdown.");
+    sm_app = SCARLETTMIXER_APP(app);
+
+    G_APPLICATION_CLASS(sm_app_parent_class)->shutdown(app);
+}
+
+static void
+sm_app_class_init(ScarlettMixerAppClass *class)
 {
     g_debug("sm_app_class_init.");
     g_set_prgname("Scarlett Mixer");
@@ -137,12 +152,13 @@ sm_app_class_init (ScarlettMixerAppClass *class)
     G_APPLICATION_CLASS(class)->activate = sm_app_activate;
     G_APPLICATION_CLASS(class)->open = sm_app_open;
     G_APPLICATION_CLASS(class)->startup = sm_app_startup;
+    G_APPLICATION_CLASS(class)->shutdown = sm_app_shutdown;
 }
 
-static int
+gint
 sm_app_find_card(const gchar* prefix)
 {
-    int number, err, ret;
+    gint number, err, ret;
     snd_ctl_t *ctl;
     snd_ctl_card_info_t *cinfo;
     gchar hw_buf[8];
@@ -288,7 +304,7 @@ sm_app_gioch_mixer_callback(GIOChannel *source,
     return TRUE;
 }
 
-static void
+const gchar*
 sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
 {
     int err, idx;
@@ -306,15 +322,15 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
     err = snd_mixer_open(&(app->mixer), 0);
     if (err < 0)
     {
-        g_critical("Cannot open mixer.");
-        return;
+        g_critical("Cannot open mixer: %s", snd_strerror(err));
+        return NULL;
     }
 
     err = snd_mixer_selem_register(app->mixer, &selem_regopt, NULL);
     if (err < 0)
     {
-        g_critical("Cannot register simple mixer.");
-        return;
+        g_critical("Cannot register simple mixer: %s", snd_strerror(err));
+        return NULL;
     }
 
     snd_mixer_set_callback(app->mixer, sm_app_mixer_callback);
@@ -322,15 +338,15 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
     err = snd_mixer_load(app->mixer);
     if (err < 0)
     {
-        g_critical("Cannot load mixer controls.");
-        return;
+        g_critical("Cannot load mixer controls: %s", snd_strerror(err));
+        return NULL;
     }
 
     err = snd_mixer_get_hctl(app->mixer, selem_regopt.device, &(app->hctl));
     if (err < 0)
     {
-        g_critical("Cannot get HCTL.");
-        return;
+        g_critical("Cannot get HCTL: %s", snd_strerror(err));
+        return NULL;
     }/*
     else
     {
@@ -348,8 +364,8 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
     err = snd_ctl_card_info(snd_hctl_ctl(app->hctl), app->card_info);
     if (err < 0)
     {
-        g_critical("Cannot read information from sound card.");
-        return;
+        g_critical("Cannot read information from sound card: %s", snd_strerror(err));
+        return NULL;
     }
     app->card_name = snd_ctl_card_info_get_name(app->card_info);
 
@@ -447,22 +463,13 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
             }
         }
     }
+    return app->card_name;
 }
 
 static void
-sm_app_init (ScarlettMixerApp *app)
+sm_app_init(ScarlettMixerApp *app)
 {
-    const gchar *prefix_scarlett = "Scarlett";
-    const gchar *prefix_intel = "HDA Intel";
-    const gchar *prefix = prefix_scarlett;
-    int card_number;
-
     g_debug("sm_app_init.");
-    card_number = sm_app_find_card(prefix);
-    if (card_number >= 0)
-    {
-        sm_app_open_mixer(app, card_number);
-    }
 }
 
 ScarlettMixerApp *

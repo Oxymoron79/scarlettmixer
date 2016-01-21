@@ -13,7 +13,7 @@ PKG_PROG_PKG_CONFIG
 
 dnl Libraries
 PKG_CHECK_MODULES(ALSA, alsa)
-PKG_CHECK_MODULES(GTK, gtk+-3.0 gobject-2.0)
+PKG_CHECK_MODULES(GTK, gtk+-3.0 >= 3.12 gobject-2.0)
 
 dnl Output
 AC_CONFIG_FILES(Makefile src/Makefile)

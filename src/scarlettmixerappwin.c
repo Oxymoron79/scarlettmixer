@@ -21,16 +21,58 @@ typedef struct _ScarlettMixerAppWindowPrivate ScarlettMixerAppWindowPrivate;
 struct _ScarlettMixerAppWindowPrivate
 {
     ScarlettMixerApp *app;
+    const gchar* prefix;
     GtkLabel *card_name_label;
     GtkNotebook *output_mix_notebook;
     GList *mix_pages;
     GtkBox *output_channel_box;
+    GtkExpander *input_sources_expander;
     GtkBox *input_sources_box;
     GtkBox *input_switches_box;
+    GtkBox *error_box;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(ScarlettMixerAppWindow, sm_app_window,
         GTK_TYPE_APPLICATION_WINDOW);
+
+// Forward declarations
+static void
+sm_app_window_init_channels(ScarlettMixerAppWindow *win, const gchar *card_name);
+
+static void
+sm_app_window_check_for_interface(ScarlettMixerAppWindow *win)
+{
+    ScarlettMixerAppWindowPrivate *priv;
+    gint card_number;
+    const gchar *card_name;
+
+    priv = sm_app_window_get_instance_private(win);
+    card_number = sm_app_find_card(priv->prefix);
+    if (card_number >= 0)
+    {
+        card_name = sm_app_open_mixer(priv->app, card_number);
+        gtk_widget_show(GTK_WIDGET(priv->input_sources_expander));
+        sm_app_window_init_channels(win, card_name);
+    }
+    else {
+        g_debug("No interface with prefix %s found.", priv->prefix);
+        gtk_box_set_center_widget(priv->output_channel_box, GTK_WIDGET(priv->error_box));
+        gtk_widget_show_all(GTK_WIDGET(priv->error_box));
+    }
+}
+
+static void
+refresh_button_clicked_cb(GtkButton *button, gpointer data)
+{
+    ScarlettMixerAppWindow *win;
+    ScarlettMixerAppWindowPrivate *priv;
+
+    g_debug("Refresh interface list.");
+    win = SCARLETTMIXER_APP_WINDOW(data);
+    priv = sm_app_window_get_instance_private(win);
+    gtk_box_set_center_widget(priv->output_channel_box, NULL);
+    sm_app_window_check_for_interface(win);
+}
 
 static void
 sm_app_window_class_init(ScarlettMixerAppWindowClass *class)
@@ -58,9 +100,16 @@ sm_app_window_class_init(ScarlettMixerAppWindowClass *class)
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             ScarlettMixerAppWindow, output_channel_box);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
+            ScarlettMixerAppWindow, input_sources_expander);
+    gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             ScarlettMixerAppWindow, input_sources_box);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             ScarlettMixerAppWindow, input_switches_box);
+    gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
+            ScarlettMixerAppWindow, error_box);
+
+    gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
+            refresh_button_clicked_cb);
 }
 
 static void
@@ -90,22 +139,21 @@ sm_app_window_source_changed_cb(SmSource *src, gpointer user_data)
     gtk_combo_box_set_active(GTK_COMBO_BOX(comboboxtext), active_idx);
 }
 
-ScarlettMixerAppWindow *
-sm_app_window_new(ScarlettMixerApp *app, const gchar* card_name)
+static void
+sm_app_window_init_channels(ScarlettMixerAppWindow *win, const gchar *card_name)
 {
-    ScarlettMixerAppWindow *win;
     ScarlettMixerAppWindowPrivate *priv;
+    ScarlettMixerApp *app;
     ScarlettMixerStrip *strip;
     GtkBox *box;
     GtkLabel *label;
     GtkComboBoxText *comboboxtext;
     GList *list, *item;
-    int idx;
+    gint idx;
 
-    g_debug("sm_app_window_new.");
-    win = g_object_new(SCARLETTMIXER_APP_WINDOW_TYPE, "application", app, NULL);
+    g_debug("sm_app_window_init_channels.");
     priv = sm_app_window_get_instance_private(win);
-    priv->app = app;
+    app = priv->app;
 
     if(card_name)
     {
@@ -189,6 +237,20 @@ sm_app_window_new(ScarlettMixerApp *app, const gchar* card_name)
         gtk_box_pack_start(priv->input_sources_box, GTK_WIDGET(box), FALSE, FALSE, 2);
     }
     gtk_widget_show_all(GTK_WIDGET(priv->input_sources_box));
+}
+
+ScarlettMixerAppWindow *
+sm_app_window_new(ScarlettMixerApp *app, const gchar* prefix)
+{
+    ScarlettMixerAppWindow *win;
+    ScarlettMixerAppWindowPrivate *priv;
+
+    g_debug("sm_app_window_new.");
+    win = g_object_new(SCARLETTMIXER_APP_WINDOW_TYPE, "application", app, NULL);
+    priv = sm_app_window_get_instance_private(win);
+    priv->app = app;
+    priv->prefix = prefix;
+    sm_app_window_check_for_interface(win);
     return win;
 }
 

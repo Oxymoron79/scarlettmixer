@@ -281,7 +281,7 @@ sm_strip_new(SmChannel *channel)
     }
     else
     {
-        gtk_widget_set_visible(GTK_WIDGET(priv->left_scale_source_comboboxtext), FALSE);
+        gtk_widget_hide(GTK_WIDGET(priv->left_scale_source_comboboxtext));
     }
     if (sm_channel_has_source(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT))
     {
@@ -302,7 +302,7 @@ sm_strip_new(SmChannel *channel)
     }
     else
     {
-        gtk_widget_set_visible(GTK_WIDGET(priv->right_scale_source_comboboxtext), FALSE);
+        gtk_widget_hide(GTK_WIDGET(priv->right_scale_source_comboboxtext));
     }
 
     if (sm_channel_volume_get_range_db(priv->channel, &min_db, &max_db))
@@ -311,7 +311,7 @@ sm_strip_new(SmChannel *channel)
         gtk_adjustment_set_upper(priv->left_adjustment, vol_to_value(max_db));
         gtk_level_bar_set_min_value(priv->left_levelbar, vol_to_value(min_db));
         gtk_level_bar_set_max_value(priv->left_levelbar, vol_to_value(max_db));
-        gtk_level_bar_add_offset_value (priv->left_levelbar, GTK_LEVEL_BAR_OFFSET_HIGH, 1.01);
+        gtk_level_bar_add_offset_value(priv->left_levelbar, GTK_LEVEL_BAR_OFFSET_HIGH, 1.01);
     }
 
     if (sm_channel_has_volume(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT))
@@ -320,7 +320,7 @@ sm_strip_new(SmChannel *channel)
         gtk_adjustment_set_upper(priv->right_adjustment, vol_to_value(max_db));
         gtk_level_bar_set_min_value(priv->right_levelbar, vol_to_value(min_db));
         gtk_level_bar_set_max_value(priv->right_levelbar, vol_to_value(max_db));
-        gtk_level_bar_add_offset_value (priv->right_levelbar, GTK_LEVEL_BAR_OFFSET_HIGH, 1.01);
+        gtk_level_bar_add_offset_value(priv->right_levelbar, GTK_LEVEL_BAR_OFFSET_HIGH, 1.01);
 
         sm_channel_volume_get_db(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT, &vol_db);
         gtk_range_set_value(GTK_RANGE(priv->right_scale), vol_to_value(vol_db));
@@ -332,15 +332,15 @@ sm_strip_new(SmChannel *channel)
         }
         else
         {
-            gtk_widget_set_visible(GTK_WIDGET(priv->mute_togglebutton), FALSE);
+            gtk_widget_hide(GTK_WIDGET(priv->mute_togglebutton));
         }
     }
     else
     {
-        gtk_widget_set_visible(GTK_WIDGET(priv->right_scale_source_comboboxtext), FALSE);
-        gtk_widget_set_visible(GTK_WIDGET(priv->right_scale), FALSE);
-        gtk_widget_set_visible(GTK_WIDGET(priv->right_levelbar), FALSE);
-        gtk_widget_set_visible(GTK_WIDGET(priv->join_togglebutton), FALSE);
+        gtk_widget_hide(GTK_WIDGET(priv->right_scale_source_comboboxtext));
+        gtk_widget_hide(GTK_WIDGET(priv->right_scale));
+        gtk_widget_hide(GTK_WIDGET(priv->right_levelbar));
+        gtk_widget_hide(GTK_WIDGET(priv->join_togglebutton));
     }
 
     if (sm_channel_has_volume(priv->channel, SND_MIXER_SCHN_FRONT_LEFT))
@@ -355,7 +355,7 @@ sm_strip_new(SmChannel *channel)
         }
         else
         {
-            gtk_widget_set_visible(GTK_WIDGET(priv->mute_togglebutton), FALSE);
+            gtk_widget_hide(GTK_WIDGET(priv->mute_togglebutton));
         }
     }
 
