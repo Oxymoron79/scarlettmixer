@@ -39,27 +39,28 @@ G_DEFINE_TYPE_WITH_PRIVATE(ScarlettMixerAppWindow, sm_app_window,
 static void
 sm_app_window_init_channels(ScarlettMixerAppWindow *win, const gchar *card_name);
 
-static void
-sm_app_window_check_for_interface(ScarlettMixerAppWindow *win)
+static gboolean
+sm_app_window_check_for_interface(gpointer win)
 {
     ScarlettMixerAppWindowPrivate *priv;
     gint card_number;
     const gchar *card_name;
 
     priv = sm_app_window_get_instance_private(win);
-    g_application_unmark_busy(G_APPLICATION(priv->app));
     card_number = sm_app_find_card(priv->prefix);
     if (card_number >= 0)
     {
         card_name = sm_app_open_mixer(priv->app, card_number);
-        gtk_widget_show(GTK_WIDGET(priv->input_sources_expander));
         sm_app_window_init_channels(win, card_name);
+        g_application_unmark_busy(G_APPLICATION(priv->app));
     }
     else {
         g_debug("No interface with prefix %s found.", priv->prefix);
         gtk_box_set_center_widget(priv->output_channel_box, GTK_WIDGET(priv->error_box));
         gtk_widget_show_all(GTK_WIDGET(priv->error_box));
+        g_application_unmark_busy(G_APPLICATION(priv->app));
     }
+    return FALSE;
 }
 
 static void
@@ -71,6 +72,7 @@ refresh_button_clicked_cb(GtkButton *button, gpointer data)
     g_debug("Refresh interface list.");
     win = SCARLETTMIXER_APP_WINDOW(data);
     priv = sm_app_window_get_instance_private(win);
+    g_application_mark_busy(G_APPLICATION(priv->app));
     gtk_box_set_center_widget(priv->output_channel_box, NULL);
     sm_app_window_check_for_interface(win);
 }
@@ -160,6 +162,7 @@ sm_app_window_init_channels(ScarlettMixerAppWindow *win, const gchar *card_name)
     {
         gtk_label_set_label(priv->card_name_label, card_name);
     }
+    gtk_widget_show(GTK_WIDGET(priv->input_sources_expander));
     for (list = g_list_first(sm_app_get_channels(priv->app)); list; list = g_list_next(list))
     {
         SmChannel *ch = SM_CHANNEL(list->data);
@@ -251,7 +254,7 @@ sm_app_window_new(ScarlettMixerApp *app, const gchar* prefix)
     priv = sm_app_window_get_instance_private(win);
     priv->app = app;
     priv->prefix = prefix;
-    sm_app_window_check_for_interface(win);
+    g_timeout_add(50, sm_app_window_check_for_interface, (gpointer)win);
     return win;
 }
 
