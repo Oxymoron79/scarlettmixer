@@ -27,6 +27,7 @@ struct _ScarlettMixerAppWindowPrivate
     ScarlettMixerApp *app;
     const gchar* prefix;
     GtkLabel *card_name_label;
+    GtkToggleButton *reveal_input_sources_togglebutton;
     GtkStack *main_stack;
     GtkNotebook *output_mix_notebook;
     GList *mix_pages;
@@ -83,9 +84,18 @@ refresh_button_clicked_cb(GtkButton *button, gpointer data)
     win = SCARLETTMIXER_APP_WINDOW(data);
     priv = sm_app_window_get_instance_private(win);
     g_application_mark_busy(G_APPLICATION(priv->app));
-    //gtk_box_set_center_widget(priv->output_channel_box, NULL);
     gtk_stack_set_visible_child_name(priv->main_stack, "init");
     g_timeout_add(SM_APP_WIN_INIT_TIMEOUT, sm_app_window_check_for_interface, (gpointer)win);
+}
+
+static void
+reveal_input_sources_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpointer user_data)
+{
+    gboolean active;
+    GtkRevealer *revealer = GTK_REVEALER(user_data);
+
+    active = gtk_toggle_button_get_active(togglebutton);
+    gtk_revealer_set_reveal_child(revealer, active);
 }
 
 static void
@@ -110,6 +120,8 @@ sm_app_window_class_init(ScarlettMixerAppWindowClass *class)
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             ScarlettMixerAppWindow, card_name_label);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
+            ScarlettMixerAppWindow, reveal_input_sources_togglebutton);
+    gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             ScarlettMixerAppWindow, main_stack);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             ScarlettMixerAppWindow, output_mix_notebook);
@@ -120,6 +132,8 @@ sm_app_window_class_init(ScarlettMixerAppWindowClass *class)
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             ScarlettMixerAppWindow, input_switches_box);
 
+    gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
+            reveal_input_sources_togglebutton_toggled_cb);
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
             refresh_button_clicked_cb);
 }
@@ -240,14 +254,18 @@ sm_app_window_init_input_sources(gpointer data)
     GtkBox *box;
     GtkLabel *label;
     GtkComboBoxText *comboboxtext;
+    GtkStyleContext *style_ctx;
     gint idx;
 
     arg = (ScarlettMixerAppWindowInitArg*)data;
     src = SM_SOURCE(arg->list->data);
     box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, SM_APP_WIN_BOX_PADDING));
-    label = GTK_LABEL(gtk_label_new(sm_source_get_name(src)));
+    sscanf(sm_source_get_name(src), "Input Source %02u", &idx);
+    label = GTK_LABEL(gtk_label_new(g_strdup_printf("Input %d", idx)));
     gtk_box_pack_start(box, GTK_WIDGET(label), FALSE, FALSE, 0);
     comboboxtext = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
+    style_ctx = gtk_widget_get_style_context(GTK_WIDGET(comboboxtext));
+    gtk_style_context_add_class(style_ctx, "small-text");
     for (item = g_list_first(sm_source_get_item_names(src)); item; item = g_list_next(item))
     {
         gtk_combo_box_text_append_text(comboboxtext, item->data);
@@ -262,7 +280,7 @@ sm_app_window_init_input_sources(gpointer data)
     g_signal_connect (GTK_WIDGET(comboboxtext), "changed", G_CALLBACK(sm_app_window_comboboxtext_changed_cb), src);
     g_signal_connect(src, "changed", G_CALLBACK(sm_app_window_source_changed_cb), comboboxtext);
     gtk_box_pack_start(box, GTK_WIDGET(comboboxtext), FALSE, FALSE, 0);
-    gtk_box_pack_start(arg->priv->input_sources_box, GTK_WIDGET(box), FALSE, FALSE, SM_APP_WIN_BOX_PADDING);
+    gtk_box_pack_start(arg->priv->input_sources_box, GTK_WIDGET(box), FALSE, FALSE, 0);
     arg->list = g_list_next(arg->list);
     if (arg->list)
     {
@@ -270,6 +288,7 @@ sm_app_window_init_input_sources(gpointer data)
     }
     else
     {
+        gtk_widget_show(GTK_WIDGET(arg->priv->reveal_input_sources_togglebutton));
         gtk_widget_show_all(GTK_WIDGET(arg->priv->input_sources_box));
         g_free(arg);
         return FALSE;

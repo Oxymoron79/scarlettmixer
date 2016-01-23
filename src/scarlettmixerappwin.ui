@@ -2,6 +2,11 @@
 <!-- Generated with glade 3.19.0 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
+  <object class="GtkImage" id="input_sources_image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-disconnect</property>
+  </object>
   <template class="ScarlettMixerAppWindow" parent="GtkApplicationWindow">
     <property name="can_focus">False</property>
     <property name="default_width">1280</property>
@@ -181,14 +186,14 @@ Please make sure the interface is connected and is powered on.</property>
             <property name="orientation">vertical</property>
             <property name="spacing">5</property>
             <child>
-              <object class="GtkExpander" id="input_sources_expander">
+              <object class="GtkRevealer" id="input_sources_revealer">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="resize_toplevel">True</property>
+                <property name="can_focus">False</property>
                 <child>
                   <object class="GtkViewport" id="input_sources_viewport">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="margin_top">5</property>
                     <child>
                       <object class="GtkBox" id="input_sources_box">
                         <property name="visible">True</property>
@@ -197,19 +202,12 @@ Please make sure the interface is connected and is powered on.</property>
                         <property name="margin_right">5</property>
                         <property name="margin_top">5</property>
                         <property name="margin_bottom">5</property>
+                        <property name="spacing">2</property>
                         <child>
                           <placeholder/>
                         </child>
                       </object>
                     </child>
-                  </object>
-                </child>
-                <child type="label">
-                  <object class="GtkLabel" id="input_sources_expander_label">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Input Sources</property>
-                    <property name="ellipsize">start</property>
                   </object>
                 </child>
               </object>
@@ -270,6 +268,15 @@ Please make sure the interface is connected and is powered on.</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="show_close_button">True</property>
+        <child>
+          <object class="GtkToggleButton" id="reveal_input_sources_togglebutton">
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="image">input_sources_image</property>
+            <property name="always_show_image">True</property>
+            <signal name="toggled" handler="reveal_input_sources_togglebutton_toggled_cb" object="input_sources_revealer" swapped="no"/>
+          </object>
+        </child>
         <child type="title">
           <object class="GtkLabel" id="card_name_label">
             <property name="visible">True</property>
