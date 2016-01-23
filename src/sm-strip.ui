@@ -21,7 +21,7 @@
     <property name="step_increment">0.01</property>
     <property name="page_increment">0.10000000000000001</property>
   </object>
-  <template class="ScarlettMixerStrip" parent="GtkBox">
+  <template class="SmStrip" parent="GtkBox">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="orientation">vertical</property>
@@ -35,7 +35,7 @@
           <object class="GtkComboBoxText" id="left_scale_source_comboboxtext">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <signal name="changed" handler="scale_source_comboboxtext_changed_cb" object="ScarlettMixerStrip" swapped="no"/>
+            <signal name="changed" handler="scale_source_comboboxtext_changed_cb" object="SmStrip" swapped="no"/>
             <style>
               <class name="small-text"/>
             </style>
@@ -60,7 +60,7 @@
             <property name="round_digits">3</property>
             <property name="value_pos">bottom</property>
             <signal name="format-value" handler="scale_format_value_cb" swapped="no"/>
-            <signal name="value-changed" handler="scale_value_changed_cb" object="ScarlettMixerStrip" swapped="no"/>
+            <signal name="value-changed" handler="scale_value_changed_cb" object="SmStrip" swapped="no"/>
             <style>
               <class name="small-text"/>
             </style>
@@ -74,7 +74,7 @@
           <object class="GtkComboBoxText" id="right_scale_source_comboboxtext">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <signal name="changed" handler="scale_source_comboboxtext_changed_cb" object="ScarlettMixerStrip" swapped="no"/>
+            <signal name="changed" handler="scale_source_comboboxtext_changed_cb" object="SmStrip" swapped="no"/>
             <style>
               <class name="small-text"/>
             </style>
@@ -99,7 +99,7 @@
             <property name="round_digits">3</property>
             <property name="value_pos">bottom</property>
             <signal name="format-value" handler="scale_format_value_cb" swapped="no"/>
-            <signal name="value-changed" handler="scale_value_changed_cb" object="ScarlettMixerStrip" swapped="no"/>
+            <signal name="value-changed" handler="scale_value_changed_cb" object="SmStrip" swapped="no"/>
             <style>
               <class name="small-text"/>
             </style>
@@ -176,7 +176,7 @@
             <property name="receives_default">True</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
-            <signal name="toggled" handler="mute_togglebutton_toggled_cb" object="ScarlettMixerStrip" swapped="no"/>
+            <signal name="toggled" handler="mute_togglebutton_toggled_cb" object="SmStrip" swapped="no"/>
             <style>
               <class name="small-button"/>
               <class name="small-text"/>
@@ -195,7 +195,7 @@
             <property name="receives_default">True</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
-            <signal name="toggled" handler="mute_togglebutton_toggled_cb" object="ScarlettMixerStrip" swapped="no"/>
+            <signal name="toggled" handler="mute_togglebutton_toggled_cb" object="SmStrip" swapped="no"/>
             <style>
               <class name="small-button"/>
               <class name="small-text"/>

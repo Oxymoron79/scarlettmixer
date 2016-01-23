@@ -10,21 +10,21 @@
 #define SM_APP_WIN_BOX_MARGIN (5)
 #define SM_APP_WIN_BOX_PADDING (2)
 
-struct _ScarlettMixerAppWindowClass
+struct _SmAppWinClass
 {
     GtkApplicationWindowClass parent_class;
 };
 
-struct _ScarlettMixerAppWindow
+struct _SmAppWin
 {
     GtkApplicationWindow parent;
 };
 
-typedef struct _ScarlettMixerAppWindowPrivate ScarlettMixerAppWindowPrivate;
+typedef struct _SmAppWinPrivate SmAppWinPrivate;
 
-struct _ScarlettMixerAppWindowPrivate
+struct _SmAppWinPrivate
 {
-    ScarlettMixerApp *app;
+    SmApp *app;
     const gchar* prefix;
     GtkLabel *card_name_label;
     GtkToggleButton *reveal_input_sources_togglebutton;
@@ -36,34 +36,34 @@ struct _ScarlettMixerAppWindowPrivate
     GtkBox *input_switches_box;
 };
 
-typedef struct _ScarlettMixerAppWindowInitArg ScarlettMixerAppWindowInitArg;
+typedef struct _SmAppWinInitArg SmAppWinInitArg;
 
-struct _ScarlettMixerAppWindowInitArg
+struct _SmAppWinInitArg
 {
-    ScarlettMixerAppWindowPrivate *priv;
+    SmAppWinPrivate *priv;
     GList *list;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE(ScarlettMixerAppWindow, sm_app_window,
+G_DEFINE_TYPE_WITH_PRIVATE(SmAppWin, sm_appwin,
         GTK_TYPE_APPLICATION_WINDOW);
 
 // Forward declarations
 static void
-sm_app_window_init_channels(ScarlettMixerAppWindow *win, const gchar *card_name);
+sm_appwin_init_channels(SmAppWin *win, const gchar *card_name);
 
 static gboolean
-sm_app_window_check_for_interface(gpointer win)
+sm_appwin_check_for_interface(gpointer win)
 {
-    ScarlettMixerAppWindowPrivate *priv;
+    SmAppWinPrivate *priv;
     gint card_number;
     const gchar *card_name;
 
-    priv = sm_app_window_get_instance_private(win);
+    priv = sm_appwin_get_instance_private(win);
     card_number = sm_app_find_card(priv->prefix);
     if (card_number >= 0)
     {
         card_name = sm_app_open_mixer(priv->app, card_number);
-        sm_app_window_init_channels(win, card_name);
+        sm_appwin_init_channels(win, card_name);
         g_application_unmark_busy(G_APPLICATION(priv->app));
     }
     else {
@@ -77,15 +77,15 @@ sm_app_window_check_for_interface(gpointer win)
 static void
 refresh_button_clicked_cb(GtkButton *button, gpointer data)
 {
-    ScarlettMixerAppWindow *win;
-    ScarlettMixerAppWindowPrivate *priv;
+    SmAppWin *win;
+    SmAppWinPrivate *priv;
 
     g_debug("Refresh interface list.");
-    win = SCARLETTMIXER_APP_WINDOW(data);
-    priv = sm_app_window_get_instance_private(win);
+    win = SM_APPWIN(data);
+    priv = sm_appwin_get_instance_private(win);
     g_application_mark_busy(G_APPLICATION(priv->app));
     gtk_stack_set_visible_child_name(priv->main_stack, "init");
-    g_timeout_add(SM_APP_WIN_INIT_TIMEOUT, sm_app_window_check_for_interface, (gpointer)win);
+    g_timeout_add(SM_APP_WIN_INIT_TIMEOUT, sm_appwin_check_for_interface, (gpointer)win);
 }
 
 static void
@@ -99,7 +99,7 @@ reveal_input_sources_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpoi
 }
 
 static void
-sm_app_window_class_init(ScarlettMixerAppWindowClass *class)
+sm_appwin_class_init(SmAppWinClass *class)
 {
     GtkCssProvider *provider;
     GdkDisplay *display;
@@ -114,23 +114,23 @@ sm_app_window_class_init(ScarlettMixerAppWindowClass *class)
     gtk_css_provider_load_from_resource(GTK_CSS_PROVIDER(provider),
             "/org/alsa/scarlettmixer/sm-appwin.css");
     g_object_unref(provider);
-    g_debug("sm_app_window_class_init.");
+    g_debug("sm_appwin_class_init.");
     gtk_widget_class_set_template_from_resource(GTK_WIDGET_CLASS(class),
             "/org/alsa/scarlettmixer/sm-appwin.ui");
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerAppWindow, card_name_label);
+            SmAppWin, card_name_label);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerAppWindow, reveal_input_sources_togglebutton);
+            SmAppWin, reveal_input_sources_togglebutton);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerAppWindow, main_stack);
+            SmAppWin, main_stack);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerAppWindow, output_mix_notebook);
+            SmAppWin, output_mix_notebook);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerAppWindow, output_channel_box);
+            SmAppWin, output_channel_box);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerAppWindow, input_sources_box);
+            SmAppWin, input_sources_box);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerAppWindow, input_switches_box);
+            SmAppWin, input_switches_box);
 
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
             reveal_input_sources_togglebutton_toggled_cb);
@@ -139,14 +139,14 @@ sm_app_window_class_init(ScarlettMixerAppWindowClass *class)
 }
 
 static void
-sm_app_window_init(ScarlettMixerAppWindow *win)
+sm_appwin_init(SmAppWin *win)
 {
-    g_debug("sm_app_window_init.");
+    g_debug("sm_appwin_init.");
     gtk_widget_init_template(GTK_WIDGET(win));
 }
 
 static void
-sm_app_window_comboboxtext_changed_cb(GtkComboBox *combo, gpointer user_data)
+sm_appwin_comboboxtext_changed_cb(GtkComboBox *combo, gpointer user_data)
 {
     SmSource *src = SM_SOURCE(user_data);
     int active_idx;
@@ -156,7 +156,7 @@ sm_app_window_comboboxtext_changed_cb(GtkComboBox *combo, gpointer user_data)
 }
 
 static void
-sm_app_window_source_changed_cb(SmSource *src, gpointer user_data)
+sm_appwin_source_changed_cb(SmSource *src, gpointer user_data)
 {
     GtkComboBoxText *comboboxtext = GTK_COMBO_BOX_TEXT(user_data);
     int active_idx;
@@ -166,17 +166,17 @@ sm_app_window_source_changed_cb(SmSource *src, gpointer user_data)
 }
 
 static gboolean
-sm_app_window_init_strips(gpointer data)
+sm_appwin_init_strips(gpointer data)
 {
-    ScarlettMixerAppWindowInitArg *arg;
+    SmAppWinInitArg *arg;
     SmChannel *ch;
-    ScarlettMixerStrip *strip;
+    SmStrip *strip;
     GList *item;
     GtkBox *box;
     GtkLabel *label;
     gint idx;
 
-    arg = (ScarlettMixerAppWindowInitArg*)data;
+    arg = (SmAppWinInitArg*)data;
     ch = SM_CHANNEL(arg->list->data);
     switch (sm_channel_get_channel_type(ch))
     {
@@ -246,9 +246,9 @@ sm_app_window_init_strips(gpointer data)
 }
 
 static gboolean
-sm_app_window_init_input_sources(gpointer data)
+sm_appwin_init_input_sources(gpointer data)
 {
-    ScarlettMixerAppWindowInitArg *arg;
+    SmAppWinInitArg *arg;
     SmSource *src;
     GList *item;
     GtkBox *box;
@@ -257,7 +257,7 @@ sm_app_window_init_input_sources(gpointer data)
     GtkStyleContext *style_ctx;
     gint idx;
 
-    arg = (ScarlettMixerAppWindowInitArg*)data;
+    arg = (SmAppWinInitArg*)data;
     src = SM_SOURCE(arg->list->data);
     box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, SM_APP_WIN_BOX_PADDING));
     sscanf(sm_source_get_name(src), "Input Source %02u", &idx);
@@ -277,8 +277,8 @@ sm_app_window_init_input_sources(gpointer data)
     else {
         gtk_combo_box_set_active(GTK_COMBO_BOX(comboboxtext), idx);
     }
-    g_signal_connect (GTK_WIDGET(comboboxtext), "changed", G_CALLBACK(sm_app_window_comboboxtext_changed_cb), src);
-    g_signal_connect(src, "changed", G_CALLBACK(sm_app_window_source_changed_cb), comboboxtext);
+    g_signal_connect (GTK_WIDGET(comboboxtext), "changed", G_CALLBACK(sm_appwin_comboboxtext_changed_cb), src);
+    g_signal_connect(src, "changed", G_CALLBACK(sm_appwin_source_changed_cb), comboboxtext);
     gtk_box_pack_start(box, GTK_WIDGET(comboboxtext), FALSE, FALSE, 0);
     gtk_box_pack_start(arg->priv->input_sources_box, GTK_WIDGET(box), FALSE, FALSE, 0);
     arg->list = g_list_next(arg->list);
@@ -296,50 +296,50 @@ sm_app_window_init_input_sources(gpointer data)
 }
 
 static void
-sm_app_window_init_channels(ScarlettMixerAppWindow *win, const gchar *card_name)
+sm_appwin_init_channels(SmAppWin *win, const gchar *card_name)
 {
-    ScarlettMixerAppWindowPrivate *priv;
-    ScarlettMixerAppWindowInitArg *arg;
+    SmAppWinPrivate *priv;
+    SmAppWinInitArg *arg;
 
-    g_debug("sm_app_window_init_channels.");
-    priv = sm_app_window_get_instance_private(win);
+    g_debug("sm_appwin_init_channels.");
+    priv = sm_appwin_get_instance_private(win);
 
     if(card_name)
     {
         gtk_label_set_label(priv->card_name_label, card_name);
     }
-    arg = g_malloc0(sizeof(ScarlettMixerAppWindowInitArg));
+    arg = g_malloc0(sizeof(SmAppWinInitArg));
     arg->priv = priv;
     arg->list = g_list_first(sm_app_get_channels(priv->app));
-    g_idle_add(sm_app_window_init_strips, arg);
+    g_idle_add(sm_appwin_init_strips, arg);
 
-    arg = g_malloc0(sizeof(ScarlettMixerAppWindowInitArg));
+    arg = g_malloc0(sizeof(SmAppWinInitArg));
     arg->priv = priv;
     arg->list = g_list_first(sm_app_get_input_sources(priv->app));
-    g_idle_add(sm_app_window_init_input_sources, arg);
+    g_idle_add(sm_appwin_init_input_sources, arg);
 }
 
-ScarlettMixerAppWindow *
-sm_app_window_new(ScarlettMixerApp *app, const gchar* prefix)
+SmAppWin *
+sm_appwin_new(SmApp *app, const gchar* prefix)
 {
-    ScarlettMixerAppWindow *win;
-    ScarlettMixerAppWindowPrivate *priv;
+    SmAppWin *win;
+    SmAppWinPrivate *priv;
 
-    g_debug("sm_app_window_new.");
-    win = g_object_new(SCARLETTMIXER_APP_WINDOW_TYPE, "application", app, NULL);
-    priv = sm_app_window_get_instance_private(win);
+    g_debug("sm_appwin_new.");
+    win = g_object_new(SM_APPWIN_TYPE, "application", app, NULL);
+    priv = sm_appwin_get_instance_private(win);
     priv->app = app;
     priv->prefix = prefix;
-    g_timeout_add(SM_APP_WIN_INIT_TIMEOUT, sm_app_window_check_for_interface, (gpointer)win);
+    g_timeout_add(SM_APP_WIN_INIT_TIMEOUT, sm_appwin_check_for_interface, (gpointer)win);
     return win;
 }
 
 void
-sm_app_window_open(ScarlettMixerAppWindow *win,
+sm_appwin_open(SmAppWin *win,
         GFile *file)
 {
-    ScarlettMixerAppWindowPrivate *priv;
+    SmAppWinPrivate *priv;
 
-    g_debug("sm_app_window_open.");
-    priv = sm_app_window_get_instance_private(win);
+    g_debug("sm_appwin_open.");
+    priv = sm_appwin_get_instance_private(win);
 }

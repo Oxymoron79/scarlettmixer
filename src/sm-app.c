@@ -6,12 +6,12 @@
 #include "sm-channel.h"
 #include "sm-source.h"
 
-struct _ScarlettMixerAppClass
+struct _SmAppClass
 {
     GtkApplicationClass parent_class;
 };
 
-struct _ScarlettMixerApp
+struct _SmApp
 {
     GtkApplication parent;
 
@@ -23,7 +23,7 @@ struct _ScarlettMixerApp
     GList *input_sources;
 };
 
-G_DEFINE_TYPE(ScarlettMixerApp, sm_app, GTK_TYPE_APPLICATION);
+G_DEFINE_TYPE(SmApp, sm_app, GTK_TYPE_APPLICATION);
 
 static const gchar *prefix_scarlett = "Scarlett";
 static const gchar *prefix_intel = "HDA Intel";
@@ -70,14 +70,14 @@ static GActionEntry app_actions[] =
 static void
 sm_app_activate(GApplication *app)
 {
-    ScarlettMixerAppWindow *win;
-    ScarlettMixerApp *sm_app;
+    SmAppWin *win;
+    SmApp *sm_app;
 
     g_debug("sm_app_activate.");
 
     g_application_mark_busy(G_APPLICATION(app));
-    sm_app = SCARLETTMIXER_APP(app);
-    win = sm_app_window_new(sm_app, prefix);
+    sm_app = SM_APP(app);
+    win = sm_appwin_new(sm_app, prefix);
     gtk_window_present(GTK_WINDOW(win));
 }
 
@@ -88,20 +88,20 @@ sm_app_open(GApplication *app,
         const gchar *hint)
 {
     GList *windows;
-    ScarlettMixerAppWindow *win;
-    ScarlettMixerApp *sm_app;
+    SmAppWin *win;
+    SmApp *sm_app;
     int i;
 
     g_debug("sm_app_open.");
-    sm_app = SCARLETTMIXER_APP(app);
+    sm_app = SM_APP(app);
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     if (windows)
-        win = SCARLETTMIXER_APP_WINDOW(windows->data);
+        win = SM_APPWIN(windows->data);
     else
-        win = sm_app_window_new(SCARLETTMIXER_APP(app), prefix);
+        win = sm_appwin_new(SM_APP(app), prefix);
 
     for (i = 0; i < n_files; i++)
-        sm_app_window_open(win, files[i]);
+        sm_appwin_open(win, files[i]);
 
     gtk_window_present(GTK_WINDOW(win));
 }
@@ -109,13 +109,13 @@ sm_app_open(GApplication *app,
 static void
 sm_app_startup(GApplication *app)
 {
-    ScarlettMixerApp *sm_app;
+    SmApp *sm_app;
     GtkBuilder *builder;
     GMenuModel *app_menu;
     const gchar *quit_accels[2] = { "<Ctrl>Q", NULL };
 
     g_debug("sm_app_startup.");
-    sm_app = SCARLETTMIXER_APP(app);
+    sm_app = SM_APP(app);
 
     G_APPLICATION_CLASS(sm_app_parent_class)->startup(app);
 
@@ -136,16 +136,16 @@ sm_app_startup(GApplication *app)
 static void
 sm_app_shutdown(GApplication *app)
 {
-    ScarlettMixerApp *sm_app;
+    SmApp *sm_app;
 
     g_debug("sm_app_shutdown.");
-    sm_app = SCARLETTMIXER_APP(app);
+    sm_app = SM_APP(app);
 
     G_APPLICATION_CLASS(sm_app_parent_class)->shutdown(app);
 }
 
 static void
-sm_app_class_init(ScarlettMixerAppClass *class)
+sm_app_class_init(SmAppClass *class)
 {
     g_debug("sm_app_class_init.");
     g_set_prgname(PACKAGE_NAME);
@@ -209,7 +209,7 @@ sm_app_find_card(const gchar* prefix)
 static int
 sm_app_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned int mask)
 {
-    ScarlettMixerApp *app;
+    SmApp *app;
     SmChannel *ch;
     SmSource *src;
     GList *list;
@@ -223,7 +223,7 @@ sm_app_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned int mask)
     {
         g_debug("sm_app_mixer_elem_callback: %s value changed.",
                         snd_mixer_selem_get_name(elem));
-        app = SCARLETTMIXER_APP(g_application_get_default());
+        app = SM_APP(g_application_get_default());
         if (!app)
         {
             g_debug("sm_app_mixer_elem_callback: app == NULL");
@@ -300,13 +300,13 @@ sm_app_gioch_mixer_callback(GIOChannel *source,
         GIOCondition condition,
         gpointer data)
 {
-    ScarlettMixerApp *app = SCARLETTMIXER_APP(data);
+    SmApp *app = SM_APP(data);
     snd_mixer_handle_events(app->mixer);
     return TRUE;
 }
 
 const gchar*
-sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
+sm_app_open_mixer(SmApp *app, int card_number)
 {
     int err, idx;
     struct snd_mixer_selem_regopt selem_regopt = {
@@ -468,29 +468,29 @@ sm_app_open_mixer(ScarlettMixerApp *app, int card_number)
 }
 
 static void
-sm_app_init(ScarlettMixerApp *app)
+sm_app_init(SmApp *app)
 {
     g_debug("sm_app_init.");
 }
 
-ScarlettMixerApp *
+SmApp *
 sm_app_new()
 {
     g_debug("sm_app_new.");
-    return g_object_new(SCARLETTMIXER_APP_TYPE,
+    return g_object_new(SM_APP_TYPE,
                         "application-id", "org.alsa.scarlettmixer",
                         "flags", G_APPLICATION_HANDLES_OPEN,
                         NULL);
 }
 
 GList *
-sm_app_get_channels(ScarlettMixerApp *app)
+sm_app_get_channels(SmApp *app)
 {
     return app->channels;
 }
 
 GList *
-sm_app_get_input_sources(ScarlettMixerApp *app)
+sm_app_get_input_sources(SmApp *app)
 {
     return app->input_sources;
 }

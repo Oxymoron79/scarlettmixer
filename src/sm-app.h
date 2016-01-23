@@ -1,21 +1,21 @@
-#ifndef __SCARLETTMIXERAPP_H
-#define __SCARLETTMIXERAPP_H
+#ifndef __SM_APP_H
+#define __SM_APP_H
 
 #include <gtk/gtk.h>
 
-#define SCARLETTMIXER_APP_TYPE (sm_app_get_type())
-#define SCARLETTMIXER_APP(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), SCARLETTMIXER_APP_TYPE, ScarlettMixerApp))
+#define SM_APP_TYPE (sm_app_get_type())
+#define SM_APP(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), SM_APP_TYPE, SmApp))
 
 
-typedef struct _ScarlettMixerApp       ScarlettMixerApp;
-typedef struct _ScarlettMixerAppClass  ScarlettMixerAppClass;
+typedef struct _SmApp       SmApp;
+typedef struct _SmAppClass  SmAppClass;
 
 
-GType             sm_app_get_type();
-ScarlettMixerApp* sm_app_new();
-gint              sm_app_find_card(const gchar* prefix);
-const gchar*      sm_app_open_mixer(ScarlettMixerApp *app, int card_number);
-GList*            sm_app_get_channels(ScarlettMixerApp *app);
-GList*            sm_app_get_input_sources(ScarlettMixerApp *app);
+GType        sm_app_get_type();
+SmApp*       sm_app_new();
+gint         sm_app_find_card(const gchar* prefix);
+const gchar* sm_app_open_mixer(SmApp *app, int card_number);
+GList*       sm_app_get_channels(SmApp *app);
+GList*       sm_app_get_input_sources(SmApp *app);
 
-#endif /* __SCARLETTMIXERAPP_H */
+#endif /* __SM_APP_H */

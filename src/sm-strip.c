@@ -3,19 +3,19 @@
 
 #include "sm-strip.h"
 
-struct _ScarlettMixerStripClass
+struct _SmStripClass
 {
     GtkBoxClass parent_class;
 };
 
-struct _ScarlettMixerStrip
+struct _SmStrip
 {
     GtkBox parent;
 };
 
-typedef struct _ScarlettMixerStripPrivate ScarlettMixerStripPrivate;
+typedef struct _SmStripPrivate SmStripPrivate;
 
-struct _ScarlettMixerStripPrivate
+struct _SmStripPrivate
 {
     SmChannel *channel;
     GtkEntry *name_entry;
@@ -32,7 +32,7 @@ struct _ScarlettMixerStripPrivate
     GtkToggleButton *join_togglebutton;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE(ScarlettMixerStrip, sm_strip, GTK_TYPE_BOX);
+G_DEFINE_TYPE_WITH_PRIVATE(SmStrip, sm_strip, GTK_TYPE_BOX);
 
 static gdouble
 vol_to_value(gdouble vol_db) {
@@ -48,7 +48,7 @@ static void
 scale_source_comboboxtext_changed_cb(GtkComboBox *combo,
         gpointer     user_data)
 {
-    ScarlettMixerStripPrivate *priv;
+    SmStripPrivate *priv;
     int active_idx;
 
     priv = sm_strip_get_instance_private(user_data);
@@ -72,7 +72,7 @@ scale_format_value_cb(GtkScale *scale,
 static void
 scale_value_changed_cb(GtkRange *range, gpointer user_data)
 {
-    ScarlettMixerStripPrivate *priv;
+    SmStripPrivate *priv;
     GtkRange *other_range;
     gdouble value;
     gdouble vol_db;
@@ -109,7 +109,7 @@ scale_value_changed_cb(GtkRange *range, gpointer user_data)
 static void
 mute_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpointer user_data)
 {
-    ScarlettMixerStripPrivate *priv;
+    SmStripPrivate *priv;
     gboolean active = FALSE;
     int err;
 
@@ -143,7 +143,7 @@ mute_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpointer user_data)
 static void
 sm_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
 {
-    ScarlettMixerStripPrivate *priv;
+    SmStripPrivate *priv;
     gdouble vol_db;
     int mute;
     int idx;
@@ -194,7 +194,7 @@ sm_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
 }
 
 static void
-sm_strip_class_init(ScarlettMixerStripClass *class)
+sm_strip_class_init(SmStripClass *class)
 {
     GtkCssProvider *provider;
     GdkDisplay *display;
@@ -212,29 +212,29 @@ sm_strip_class_init(ScarlettMixerStripClass *class)
     gtk_widget_class_set_template_from_resource(GTK_WIDGET_CLASS(class),
             "/org/alsa/scarlettmixer/sm-strip.ui");
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, name_entry);
+            SmStrip, name_entry);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, left_scale_source_comboboxtext);
+            SmStrip, left_scale_source_comboboxtext);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, left_scale);
+            SmStrip, left_scale);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, left_adjustment);
+            SmStrip, left_adjustment);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, left_levelbar);
+            SmStrip, left_levelbar);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, left_mute_togglebutton);
+            SmStrip, left_mute_togglebutton);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, right_scale_source_comboboxtext);
+            SmStrip, right_scale_source_comboboxtext);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, right_scale);
+            SmStrip, right_scale);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, right_adjustment);
+            SmStrip, right_adjustment);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, right_levelbar);
+            SmStrip, right_levelbar);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, right_mute_togglebutton);
+            SmStrip, right_mute_togglebutton);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, join_togglebutton);
+            SmStrip, join_togglebutton);
 
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
             scale_source_comboboxtext_changed_cb);
@@ -246,17 +246,17 @@ sm_strip_class_init(ScarlettMixerStripClass *class)
             mute_togglebutton_toggled_cb);
 }
 
-ScarlettMixerStrip *
+SmStrip*
 sm_strip_new(SmChannel *channel)
 {
-    ScarlettMixerStrip *strip;
-    ScarlettMixerStripPrivate *priv;
+    SmStrip *strip;
+    SmStripPrivate *priv;
     GList *list;
     gdouble vol_db, min_db, max_db;
     int err, mute;
     int idx;
 
-    strip = g_object_new(SCARLETTMIXER_STRIP_TYPE, NULL);
+    strip = g_object_new(SM_STRIP_TYPE, NULL);
     priv = sm_strip_get_instance_private(strip);
     priv->channel = channel;
 
@@ -376,12 +376,12 @@ sm_strip_new(SmChannel *channel)
 }
 
 static void
-sm_strip_init(ScarlettMixerStrip *win)
+sm_strip_init(SmStrip *strip)
 {
-    ScarlettMixerStripPrivate *priv;
+    SmStripPrivate *priv;
 
-    priv = sm_strip_get_instance_private(win);
-    gtk_widget_init_template(GTK_WIDGET(win));
+    priv = sm_strip_get_instance_private(strip);
+    gtk_widget_init_template(GTK_WIDGET(strip));
     gtk_scale_add_mark(priv->left_scale, vol_to_value(0.0), GTK_POS_RIGHT, "0");
     gtk_scale_add_mark(priv->right_scale, vol_to_value(0.0), GTK_POS_LEFT, "0");
 }
