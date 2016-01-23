@@ -2,10 +2,10 @@ dnl Process this file with autoconf to produce a configure script.
 
 dnl Initialization
 AC_PREREQ(2.59)
-AC_INIT(scarlettmixer, 0.1)
+AC_INIT([Scarlett Mixer], [0.1], [martin.roesch79@gmail.com])
 AC_CONFIG_SRCDIR([src/scarlettmixer.c])
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE()
+AM_INIT_AUTOMAKE([-Wall foreign])
 
 dnl Required tools
 AC_PROG_CC

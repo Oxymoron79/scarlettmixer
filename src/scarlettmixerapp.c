@@ -37,7 +37,7 @@ about_activated(GSimpleAction *action,
     GList *windows = NULL;
     GtkWindow *win;
     const gchar *authors[2];
-    authors[0] = "Martin Rösch <martin.roesch79@gmail.com>";
+    authors[0] = "Martin Rösch <"PACKAGE_BUGREPORT">";
     authors[1] = NULL;
 
     g_debug("about_activated");
@@ -148,8 +148,8 @@ static void
 sm_app_class_init(ScarlettMixerAppClass *class)
 {
     g_debug("sm_app_class_init.");
-    g_set_prgname("Scarlett Mixer");
-    g_set_application_name("Scarlett Mixer");
+    g_set_prgname(PACKAGE_NAME);
+    g_set_application_name(PACKAGE_NAME);
     G_APPLICATION_CLASS(class)->activate = sm_app_activate;
     G_APPLICATION_CLASS(class)->open = sm_app_open;
     G_APPLICATION_CLASS(class)->startup = sm_app_startup;
