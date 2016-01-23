@@ -8,85 +8,258 @@
     <property name="default_height">450</property>
     <property name="icon">ScarlettMixer.svg</property>
     <child>
-      <object class="GtkBox" id="output_box">
+      <object class="GtkStack" id="main_stack">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_left">5</property>
-        <property name="margin_right">5</property>
-        <property name="margin_bottom">5</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">5</property>
         <child>
-          <object class="GtkExpander" id="input_sources_expander">
-            <property name="can_focus">True</property>
+          <object class="GtkViewport" id="init_viewport">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">5</property>
+            <property name="margin_right">5</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
             <child>
-              <object class="GtkViewport" id="input_sources_viewport">
+              <object class="GtkBox" id="init_box">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
                 <child>
-                  <object class="GtkBox" id="input_sources_box">
+                  <object class="GtkSpinner" id="init_spinner">
+                    <property name="width_request">48</property>
+                    <property name="height_request">48</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="active">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="init_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_left">5</property>
-                    <property name="margin_right">5</property>
-                    <property name="margin_top">5</property>
-                    <property name="margin_bottom">5</property>
-                    <child>
-                      <placeholder/>
-                    </child>
+                    <property name="label" translatable="yes">Initializing...</property>
                   </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
                 </child>
               </object>
             </child>
-            <child type="label">
-              <object class="GtkLabel" id="input_sources_expander_label">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Input Sources</property>
-                <property name="ellipsize">start</property>
-              </object>
-            </child>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
+            <property name="name">init</property>
+            <property name="title" translatable="yes">page0</property>
           </packing>
         </child>
         <child>
-          <object class="GtkNotebook" id="output_mix_notebook">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkViewport" id="output_viewport">
-            <property name="name">output-viewport</property>
+          <object class="GtkBox" id="error_box">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="margin_bottom">5</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkBox" id="output_channel_box">
+              <object class="GtkViewport" id="error_viewport">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">5</property>
                 <property name="margin_right">5</property>
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">5</property>
-                <property name="spacing">2</property>
                 <child>
-                  <placeholder/>
+                  <object class="GtkBox" id="error_msg_box">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <child>
+                      <object class="GtkImage" id="error_image">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="pixel_size">48</property>
+                        <property name="icon_name">dialog-error</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="error_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="xpad">5</property>
+                        <property name="ypad">5</property>
+                        <property name="label" translatable="yes">&lt;b&gt;No Scarlett interface found!&lt;/b&gt;
+Please make sure the interface is connected and is powered on.</property>
+                        <property name="use_markup">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
                 </child>
               </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButtonBox" id="buttonbox1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="spacing">5</property>
+                <property name="layout_style">center</property>
+                <child>
+                  <object class="GtkButton" id="refresh_button">
+                    <property name="label">gtk-refresh</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="use_stock">True</property>
+                    <property name="always_show_image">True</property>
+                    <signal name="clicked" handler="refresh_button_clicked_cb" object="ScarlettMixerAppWindow" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="quit_button">
+                    <property name="label">gtk-quit</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="action_name">app.quit</property>
+                    <property name="use_stock">True</property>
+                    <property name="always_show_image">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="pack_type">end</property>
+                <property name="position">2</property>
+              </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
+            <property name="name">error</property>
+            <property name="title" translatable="yes">page1</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="output_box">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">5</property>
+            <property name="margin_right">5</property>
+            <property name="margin_bottom">5</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">5</property>
+            <child>
+              <object class="GtkExpander" id="input_sources_expander">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="resize_toplevel">True</property>
+                <child>
+                  <object class="GtkViewport" id="input_sources_viewport">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkBox" id="input_sources_box">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="margin_left">5</property>
+                        <property name="margin_right">5</property>
+                        <property name="margin_top">5</property>
+                        <property name="margin_bottom">5</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel" id="input_sources_expander_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Input Sources</property>
+                    <property name="ellipsize">start</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkNotebook" id="output_mix_notebook">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkViewport" id="output_viewport">
+                <property name="name">output-viewport</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkBox" id="output_channel_box">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_left">5</property>
+                    <property name="margin_right">5</property>
+                    <property name="margin_top">5</property>
+                    <property name="margin_bottom">5</property>
+                    <property name="spacing">2</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="name">output</property>
+            <property name="title" translatable="yes">page2</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -110,97 +283,6 @@
       </object>
     </child>
   </template>
-  <object class="GtkBox" id="error_box">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="orientation">vertical</property>
-    <child type="center">
-      <object class="GtkBox" id="error_msg_box">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <child>
-          <object class="GtkImage" id="error_image">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="pixel_size">48</property>
-            <property name="icon_name">dialog-error</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="error_label">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="xpad">5</property>
-            <property name="ypad">5</property>
-            <property name="label" translatable="yes">&lt;b&gt;No Scarlett interface found!&lt;/b&gt;
-Please make sure the interface is connected and is powered on.</property>
-            <property name="use_markup">True</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">1</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkButtonBox" id="buttonbox1">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="spacing">5</property>
-        <property name="layout_style">center</property>
-        <child>
-          <object class="GtkButton" id="refresh_button">
-            <property name="label">gtk-refresh</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="use_stock">True</property>
-            <property name="always_show_image">True</property>
-            <signal name="clicked" handler="refresh_button_clicked_cb" object="ScarlettMixerAppWindow" swapped="no"/>
-          </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="quit_button">
-            <property name="label">gtk-quit</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="action_name">app.quit</property>
-            <property name="use_stock">True</property>
-            <property name="always_show_image">True</property>
-          </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="pack_type">end</property>
-        <property name="position">1</property>
-      </packing>
-    </child>
-  </object>
   <object class="GtkBox" id="input_switches_box">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
