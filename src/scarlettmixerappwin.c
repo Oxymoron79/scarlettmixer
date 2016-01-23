@@ -35,6 +35,14 @@ struct _ScarlettMixerAppWindowPrivate
     GtkBox *input_switches_box;
 };
 
+typedef struct _ScarlettMixerAppWindowInitArg ScarlettMixerAppWindowInitArg;
+
+struct _ScarlettMixerAppWindowInitArg
+{
+    ScarlettMixerAppWindowPrivate *priv;
+    GList *list;
+};
+
 G_DEFINE_TYPE_WITH_PRIVATE(ScarlettMixerAppWindow, sm_app_window,
         GTK_TYPE_APPLICATION_WINDOW);
 
@@ -55,7 +63,6 @@ sm_app_window_check_for_interface(gpointer win)
     {
         card_name = sm_app_open_mixer(priv->app, card_number);
         sm_app_window_init_channels(win, card_name);
-        gtk_stack_set_visible_child_name(priv->main_stack, "output");
         g_application_unmark_busy(G_APPLICATION(priv->app));
     }
     else {
@@ -144,104 +151,153 @@ sm_app_window_source_changed_cb(SmSource *src, gpointer user_data)
     gtk_combo_box_set_active(GTK_COMBO_BOX(comboboxtext), active_idx);
 }
 
+static gboolean
+sm_app_window_init_strips(gpointer data)
+{
+    ScarlettMixerAppWindowInitArg *arg;
+    SmChannel *ch;
+    ScarlettMixerStrip *strip;
+    GList *item;
+    GtkBox *box;
+    GtkLabel *label;
+    gint idx;
+
+    arg = (ScarlettMixerAppWindowInitArg*)data;
+    ch = SM_CHANNEL(arg->list->data);
+    switch (sm_channel_get_channel_type(ch))
+    {
+        case SM_CHANNEL_MASTER:
+        {
+            strip = sm_strip_new(ch);
+            gtk_box_pack_end(arg->priv->output_channel_box, GTK_WIDGET(strip), FALSE, FALSE, 0);
+            break;
+        }
+        case SM_CHANNEL_OUTPUT:
+        {
+            strip = sm_strip_new(ch);
+            gtk_box_pack_start(arg->priv->output_channel_box, GTK_WIDGET(strip), FALSE, FALSE, 0);
+            break;
+        }
+        case SM_CHANNEL_MIX:
+        {
+            strip = sm_strip_new(ch);
+            for (item = g_list_first(arg->priv->mix_pages); item; item = g_list_next(item))
+            {
+                if (g_strcmp0(gtk_widget_get_name(GTK_WIDGET(item->data)), g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch))) == 0)
+                {
+                    g_debug("Found page for Mix %c.", sm_channel_get_mix_id(ch));
+                    break;
+                }
+            }
+            if (!item)
+            {
+                box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, SM_APP_WIN_BOX_PADDING));
+                gtk_widget_set_margin_start(GTK_WIDGET(box), SM_APP_WIN_BOX_MARGIN);
+                gtk_widget_set_margin_end(GTK_WIDGET(box), SM_APP_WIN_BOX_MARGIN);
+                gtk_widget_set_margin_top(GTK_WIDGET(box), SM_APP_WIN_BOX_MARGIN);
+                gtk_widget_set_margin_bottom(GTK_WIDGET(box), SM_APP_WIN_BOX_MARGIN);
+                gtk_widget_set_name(GTK_WIDGET(box), g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch)));
+                arg->priv->mix_pages = g_list_append(arg->priv->mix_pages, box);
+                label = GTK_LABEL(gtk_label_new(g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch))));
+                idx = gtk_notebook_append_page(arg->priv->output_mix_notebook, GTK_WIDGET(box), GTK_WIDGET(label));
+            }
+            else
+            {
+                for (idx = 0; idx < gtk_notebook_get_n_pages(arg->priv->output_mix_notebook); idx++)
+                {
+                    if (gtk_notebook_get_nth_page(arg->priv->output_mix_notebook, idx) == GTK_WIDGET(item->data))
+                    {
+                        g_debug("Found notebook page.");
+                        box = GTK_BOX(item->data);
+                        break;
+                    }
+                }
+            }
+            gtk_box_pack_start(box, GTK_WIDGET(strip), FALSE, FALSE, 0);
+            gtk_widget_show(GTK_WIDGET(box));
+            break;
+        }
+    }
+    arg->list = g_list_next(arg->list);
+    if (arg->list)
+    {
+        return TRUE;
+    }
+    else
+    {
+        gtk_stack_set_visible_child_name(arg->priv->main_stack, "output");
+        g_free(arg);
+        return FALSE;
+    }
+}
+
+static gboolean
+sm_app_window_init_input_sources(gpointer data)
+{
+    ScarlettMixerAppWindowInitArg *arg;
+    SmSource *src;
+    GList *item;
+    GtkBox *box;
+    GtkLabel *label;
+    GtkComboBoxText *comboboxtext;
+    gint idx;
+
+    arg = (ScarlettMixerAppWindowInitArg*)data;
+    src = SM_SOURCE(arg->list->data);
+    box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, SM_APP_WIN_BOX_PADDING));
+    label = GTK_LABEL(gtk_label_new(sm_source_get_name(src)));
+    gtk_box_pack_start(box, GTK_WIDGET(label), FALSE, FALSE, 0);
+    comboboxtext = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
+    for (item = g_list_first(sm_source_get_item_names(src)); item; item = g_list_next(item))
+    {
+        gtk_combo_box_text_append_text(comboboxtext, item->data);
+    }
+    idx = sm_source_get_selected_item_index(src);
+    if (idx < 0) {
+        g_warning("Could not get active enum item!");
+    }
+    else {
+        gtk_combo_box_set_active(GTK_COMBO_BOX(comboboxtext), idx);
+    }
+    g_signal_connect (GTK_WIDGET(comboboxtext), "changed", G_CALLBACK(sm_app_window_comboboxtext_changed_cb), src);
+    g_signal_connect(src, "changed", G_CALLBACK(sm_app_window_source_changed_cb), comboboxtext);
+    gtk_box_pack_start(box, GTK_WIDGET(comboboxtext), FALSE, FALSE, 0);
+    gtk_box_pack_start(arg->priv->input_sources_box, GTK_WIDGET(box), FALSE, FALSE, SM_APP_WIN_BOX_PADDING);
+    arg->list = g_list_next(arg->list);
+    if (arg->list)
+    {
+        return TRUE;
+    }
+    else
+    {
+        gtk_widget_show_all(GTK_WIDGET(arg->priv->input_sources_box));
+        g_free(arg);
+        return FALSE;
+    }
+}
+
 static void
 sm_app_window_init_channels(ScarlettMixerAppWindow *win, const gchar *card_name)
 {
     ScarlettMixerAppWindowPrivate *priv;
-    ScarlettMixerApp *app;
-    ScarlettMixerStrip *strip;
-    GtkBox *box;
-    GtkLabel *label;
-    GtkComboBoxText *comboboxtext;
-    GList *list, *item;
-    gint idx;
+    ScarlettMixerAppWindowInitArg *arg;
 
     g_debug("sm_app_window_init_channels.");
     priv = sm_app_window_get_instance_private(win);
-    app = priv->app;
 
     if(card_name)
     {
         gtk_label_set_label(priv->card_name_label, card_name);
     }
-    for (list = g_list_first(sm_app_get_channels(priv->app)); list; list = g_list_next(list))
-    {
-        SmChannel *ch = SM_CHANNEL(list->data);
-        switch (sm_channel_get_channel_type(ch))
-        {
-            case SM_CHANNEL_MASTER:
-                strip = sm_strip_new(ch);
-                gtk_box_pack_end(priv->output_channel_box, GTK_WIDGET(strip), FALSE, FALSE, 0);
-                break;
-            case SM_CHANNEL_OUTPUT:
-                strip = sm_strip_new(ch);
-                gtk_box_pack_start(priv->output_channel_box, GTK_WIDGET(strip), FALSE, FALSE, 0);
-                break;
-            case SM_CHANNEL_MIX:
-                strip = sm_strip_new(ch);
-                for (item = g_list_first(priv->mix_pages); item; item = g_list_next(item))
-                {
-                    if (g_strcmp0(gtk_widget_get_name(GTK_WIDGET(item->data)), g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch))) == 0)
-                    {
-                        g_debug("Found page for Mix %c.", sm_channel_get_mix_id(ch));
-                        break;
-                    }
-                }
-                if (!item)
-                {
-                    box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, SM_APP_WIN_BOX_PADDING));
-                    gtk_widget_set_margin_start(GTK_WIDGET(box), SM_APP_WIN_BOX_MARGIN);
-                    gtk_widget_set_margin_end(GTK_WIDGET(box), SM_APP_WIN_BOX_MARGIN);
-                    gtk_widget_set_margin_top(GTK_WIDGET(box), SM_APP_WIN_BOX_MARGIN);
-                    gtk_widget_set_margin_bottom(GTK_WIDGET(box), SM_APP_WIN_BOX_MARGIN);
-                    gtk_widget_set_name(GTK_WIDGET(box), g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch)));
-                    priv->mix_pages = g_list_append(priv->mix_pages, box);
-                    label = GTK_LABEL(gtk_label_new(g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch))));
-                    idx = gtk_notebook_append_page(priv->output_mix_notebook, GTK_WIDGET(box), GTK_WIDGET(label));
-                }
-                else
-                {
-                    for (idx = 0; idx < gtk_notebook_get_n_pages(priv->output_mix_notebook); idx++)
-                    {
-                        if (gtk_notebook_get_nth_page(priv->output_mix_notebook, idx) == GTK_WIDGET(item->data))
-                        {
-                            g_debug("Found notebook page.");
-                            box = GTK_BOX(item->data);
-                            break;
-                        }
-                    }
-                }
-                gtk_box_pack_start(box, GTK_WIDGET(strip), FALSE, FALSE, 0);
-                gtk_widget_show(GTK_WIDGET(box));
-                break;
-        }
-    }
+    arg = g_malloc0(sizeof(ScarlettMixerAppWindowInitArg));
+    arg->priv = priv;
+    arg->list = g_list_first(sm_app_get_channels(priv->app));
+    g_idle_add(sm_app_window_init_strips, arg);
 
-    for (list = g_list_first(sm_app_get_input_sources(priv->app)); list; list = g_list_next(list))
-    {
-        SmSource *src = SM_SOURCE(list->data);
-        box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, SM_APP_WIN_BOX_PADDING));
-        label = GTK_LABEL(gtk_label_new(sm_source_get_name(src)));
-        gtk_box_pack_start(box, GTK_WIDGET(label), FALSE, FALSE, 0);
-        comboboxtext = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-        for (item = g_list_first(sm_source_get_item_names(src)); item; item = g_list_next(item))
-        {
-            gtk_combo_box_text_append_text(comboboxtext, item->data);
-        }
-        idx = sm_source_get_selected_item_index(src);
-        if (idx < 0) {
-            g_warning("Could not get active enum item!");
-        }
-        else {
-            gtk_combo_box_set_active(GTK_COMBO_BOX(comboboxtext), idx);
-        }
-        g_signal_connect (GTK_WIDGET(comboboxtext), "changed", G_CALLBACK(sm_app_window_comboboxtext_changed_cb), src);
-        g_signal_connect(src, "changed", G_CALLBACK(sm_app_window_source_changed_cb), comboboxtext);
-        gtk_box_pack_start(box, GTK_WIDGET(comboboxtext), FALSE, FALSE, 0);
-
-        gtk_box_pack_start(priv->input_sources_box, GTK_WIDGET(box), FALSE, FALSE, SM_APP_WIN_BOX_PADDING);
-    }
-    gtk_widget_show_all(GTK_WIDGET(priv->input_sources_box));
+    arg = g_malloc0(sizeof(ScarlettMixerAppWindowInitArg));
+    arg->priv = priv;
+    arg->list = g_list_first(sm_app_get_input_sources(priv->app));
+    g_idle_add(sm_app_window_init_input_sources, arg);
 }
 
 ScarlettMixerAppWindow *
