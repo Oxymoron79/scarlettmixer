@@ -23,12 +23,13 @@ struct _ScarlettMixerStripPrivate
     GtkScale *left_scale;
     GtkAdjustment *left_adjustment;
     GtkLevelBar *left_levelbar;
+    GtkToggleButton *left_mute_togglebutton;
     GtkComboBoxText *right_scale_source_comboboxtext;
     GtkScale *right_scale;
     GtkAdjustment *right_adjustment;
     GtkLevelBar *right_levelbar;
+    GtkToggleButton *right_mute_togglebutton;
     GtkToggleButton *join_togglebutton;
-    GtkToggleButton *mute_togglebutton;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(ScarlettMixerStrip, sm_strip, GTK_TYPE_BOX);
@@ -114,20 +115,27 @@ mute_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpointer user_data)
 
     priv = sm_strip_get_instance_private(user_data);
     active = gtk_toggle_button_get_active(togglebutton);
-    if (sm_channel_has_volume_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT))
+    if (togglebutton == priv->left_mute_togglebutton)
     {
-        // Set mute state: 0 = Muted, 1 = Unmuted
-        if(!sm_channel_volume_set_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT, !active))
+        if (sm_channel_has_volume_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT))
         {
-            g_warning("scale_value_changed_cb: Cannot set volume mute.");
+            // Set mute state: 0 = Muted, 1 = Unmuted
+            if(!sm_channel_volume_set_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT, !active))
+            {
+                g_warning("mute_togglebutton_toggled_cb: Cannot set volume mute.");
+            }
         }
     }
-    if (sm_channel_has_volume_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT))
+    if (togglebutton == priv->right_mute_togglebutton)
     {
-        // Set mute state: 0 = Muted, 1 = Unmuted
-        if(!sm_channel_volume_set_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT, !active))
+        g_debug("mute_togglebutton_toggled_cb: right_mute_togglebutton");
+        if (sm_channel_has_volume_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT))
         {
-            g_warning("scale_value_changed_cb: Cannot set volume mute.");
+            // Set mute state: 0 = Muted, 1 = Unmuted
+            if(!sm_channel_volume_set_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT, !active))
+            {
+                g_warning("mute_togglebutton_toggled_cb: Cannot set volume mute.");
+            }
         }
     }
 }
@@ -168,7 +176,7 @@ sm_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
         {
             // Get mute state: 0 = Muted, 1 = Unmuted
             sm_channel_volume_get_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT, &mute);
-            gtk_toggle_button_set_active(priv->mute_togglebutton, mute == 0);
+            gtk_toggle_button_set_active(priv->left_mute_togglebutton, mute == 0);
         }
     }
 
@@ -180,7 +188,7 @@ sm_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
         {
             // Get mute state: 0 = Muted, 1 = Unmuted
             sm_channel_volume_get_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT, &mute);
-            gtk_toggle_button_set_active(priv->mute_togglebutton, mute == 0);
+            gtk_toggle_button_set_active(priv->right_mute_togglebutton, mute == 0);
         }
     }
 }
@@ -214,6 +222,8 @@ sm_strip_class_init(ScarlettMixerStripClass *class)
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             ScarlettMixerStrip, left_levelbar);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
+            ScarlettMixerStrip, left_mute_togglebutton);
+    gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             ScarlettMixerStrip, right_scale_source_comboboxtext);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             ScarlettMixerStrip, right_scale);
@@ -222,9 +232,9 @@ sm_strip_class_init(ScarlettMixerStripClass *class)
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             ScarlettMixerStrip, right_levelbar);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, join_togglebutton);
+            ScarlettMixerStrip, right_mute_togglebutton);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            ScarlettMixerStrip, mute_togglebutton);
+            ScarlettMixerStrip, join_togglebutton);
 
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
             scale_source_comboboxtext_changed_cb);
@@ -258,6 +268,7 @@ sm_strip_new(SmChannel *channel)
         case SM_CHANNEL_MASTER:
         case SM_CHANNEL_OUTPUT:
             gtk_editable_set_editable(GTK_EDITABLE(priv->name_entry), FALSE);
+            gtk_widget_set_sensitive(GTK_WIDGET(priv->name_entry), FALSE);
             break;
         default:
             break;
@@ -328,11 +339,11 @@ sm_strip_new(SmChannel *channel)
         {
             // Get mute state: 0 = Muted, 1 = Unmuted
             sm_channel_volume_get_mute(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT, &mute);
-            gtk_toggle_button_set_active(priv->mute_togglebutton, mute == 0);
+            gtk_toggle_button_set_active(priv->right_mute_togglebutton, mute == 0);
         }
         else
         {
-            gtk_widget_hide(GTK_WIDGET(priv->mute_togglebutton));
+            gtk_widget_hide(GTK_WIDGET(priv->right_mute_togglebutton));
         }
     }
     else
@@ -340,6 +351,7 @@ sm_strip_new(SmChannel *channel)
         gtk_widget_hide(GTK_WIDGET(priv->right_scale_source_comboboxtext));
         gtk_widget_hide(GTK_WIDGET(priv->right_scale));
         gtk_widget_hide(GTK_WIDGET(priv->right_levelbar));
+        gtk_widget_hide(GTK_WIDGET(priv->right_mute_togglebutton));
         gtk_widget_hide(GTK_WIDGET(priv->join_togglebutton));
     }
 
@@ -351,11 +363,11 @@ sm_strip_new(SmChannel *channel)
         {
             // Get mute state: 0 = Muted, 1 = Unmuted
             sm_channel_volume_get_mute(priv->channel, SND_MIXER_SCHN_FRONT_LEFT, &mute);
-            gtk_toggle_button_set_active(priv->mute_togglebutton, mute == 0);
+            gtk_toggle_button_set_active(priv->left_mute_togglebutton, mute == 0);
         }
         else
         {
-            gtk_widget_hide(GTK_WIDGET(priv->mute_togglebutton));
+            gtk_widget_hide(GTK_WIDGET(priv->left_mute_togglebutton));
         }
     }
 
