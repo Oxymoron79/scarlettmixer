@@ -2,7 +2,7 @@
 #define __SCARLETTMIXERAPPWIN_H
 
 #include <gtk/gtk.h>
-#include "scarlettmixerapp.h"
+#include "sm-app.h"
 
 
 #define SCARLETTMIXER_APP_WINDOW_TYPE (sm_app_window_get_type ())

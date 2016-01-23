@@ -1,8 +1,8 @@
 #include <gtk/gtk.h>
 #include <alsa/asoundlib.h>
 
-#include "scarlettmixerapp.h"
-#include "scarlettmixerappwin.h"
+#include "sm-app.h"
+#include "sm-appwin.h"
 #include "sm-channel.h"
 #include "sm-source.h"
 
@@ -127,7 +127,7 @@ sm_app_startup(GApplication *app)
           "app.quit",
           quit_accels);
 
-    builder = gtk_builder_new_from_resource("/org/alsa/scarlettmixer/scarlettmixermenu.ui");
+    builder = gtk_builder_new_from_resource("/org/alsa/scarlettmixer/sm-appmenu.ui");
     app_menu = G_MENU_MODEL(gtk_builder_get_object(builder, "app_menu"));
     gtk_application_set_app_menu(GTK_APPLICATION(app), app_menu);
     g_object_unref (builder);

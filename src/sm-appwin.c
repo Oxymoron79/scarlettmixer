@@ -1,8 +1,8 @@
 #include <gtk/gtk.h>
 
-#include "scarlettmixerapp.h"
-#include "scarlettmixerappwin.h"
-#include "scarlettmixerstrip.h"
+#include "sm-app.h"
+#include "sm-appwin.h"
+#include "sm-strip.h"
 #include "sm-channel.h"
 #include "sm-source.h"
 
@@ -112,11 +112,11 @@ sm_app_window_class_init(ScarlettMixerAppWindowClass *class)
             GTK_STYLE_PROVIDER(provider),
             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     gtk_css_provider_load_from_resource(GTK_CSS_PROVIDER(provider),
-            "/org/alsa/scarlettmixer/scarlettmixer.css");
+            "/org/alsa/scarlettmixer/sm-appwin.css");
     g_object_unref(provider);
     g_debug("sm_app_window_class_init.");
     gtk_widget_class_set_template_from_resource(GTK_WIDGET_CLASS(class),
-            "/org/alsa/scarlettmixer/scarlettmixerappwin.ui");
+            "/org/alsa/scarlettmixer/sm-appwin.ui");
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             ScarlettMixerAppWindow, card_name_label);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),

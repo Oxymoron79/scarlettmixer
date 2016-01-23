@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 #include <math.h>
 
-#include "scarlettmixerstrip.h"
+#include "sm-strip.h"
 
 struct _ScarlettMixerStripClass
 {
@@ -207,10 +207,10 @@ sm_strip_class_init(ScarlettMixerStripClass *class)
             GTK_STYLE_PROVIDER(provider),
             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     gtk_css_provider_load_from_resource(GTK_CSS_PROVIDER(provider),
-            "/org/alsa/scarlettmixer/scarlettmixerstrip.css");
+            "/org/alsa/scarlettmixer/sm-strip.css");
     g_object_unref(provider);
     gtk_widget_class_set_template_from_resource(GTK_WIDGET_CLASS(class),
-            "/org/alsa/scarlettmixer/scarlettmixerstrip.ui");
+            "/org/alsa/scarlettmixer/sm-strip.ui");
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             ScarlettMixerStrip, name_entry);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
