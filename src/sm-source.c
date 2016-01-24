@@ -44,6 +44,8 @@ static void
 sm_source_finalize(GObject *gobject)
 {
     SmSource *self = SM_SOURCE(gobject);
+
+    g_debug("sm_source_finalize: %s", self->name);
     g_free(self->name);
     /* Always chain up to the parent class; as with dispose(), finalize()
      * is guaranteed to exist on the parent's class virtual function table
@@ -91,7 +93,7 @@ sm_source_new()
 const gchar*
 sm_source_get_name(SmSource *self)
 {
-    return g_strdup(self->name);
+    return self->name;
 }
 
 gboolean
@@ -138,18 +140,21 @@ sm_source_get_item_names(SmSource *self)
 {
     int idx;
     gchar buf[16];
+    gchar *name;
     GList *ret = NULL;
 
     if (!self->elem)
     {
         return NULL;
     }
-    for(idx = 0; idx < snd_mixer_selem_get_enum_items(self->elem); idx++) {
-        if(snd_mixer_selem_get_enum_item_name(self->elem, idx, 16, buf) == 0) {
-            ret = g_list_append(ret, g_strdup(buf));
+    for(idx = 0; idx < snd_mixer_selem_get_enum_items(self->elem); idx++)
+    {
+        if(snd_mixer_selem_get_enum_item_name(self->elem, idx, 16, buf) == 0)
+        {
+            ret = g_list_prepend(ret, g_strdup(buf));
         }
     }
-    return ret;
+    return g_list_reverse(ret);
 }
 
 int

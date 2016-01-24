@@ -6,9 +6,9 @@
 #include "sm-channel.h"
 #include "sm-source.h"
 
-#define SM_APP_WIN_INIT_TIMEOUT (100)
-#define SM_APP_WIN_BOX_MARGIN (5)
-#define SM_APP_WIN_BOX_PADDING (2)
+#define SM_APPWIN_INIT_TIMEOUT (100)
+#define SM_APPWIN_BOX_MARGIN (5)
+#define SM_APPWIN_BOX_PADDING (2)
 
 struct _SmAppWinClass
 {
@@ -85,7 +85,7 @@ refresh_button_clicked_cb(GtkButton *button, gpointer data)
     priv = sm_appwin_get_instance_private(win);
     g_application_mark_busy(G_APPLICATION(priv->app));
     gtk_stack_set_visible_child_name(priv->main_stack, "init");
-    g_timeout_add(SM_APP_WIN_INIT_TIMEOUT, sm_appwin_check_for_interface, (gpointer)win);
+    g_timeout_add(SM_APPWIN_INIT_TIMEOUT, sm_appwin_check_for_interface, (gpointer)win);
 }
 
 static void
@@ -99,11 +99,29 @@ reveal_input_sources_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpoi
 }
 
 static void
+sm_appwin_dispose(GObject *object)
+{
+    SmAppWinPrivate *priv;
+    GList *li;
+
+    priv = sm_appwin_get_instance_private(SM_APPWIN(object));
+    g_debug("sm_appwin_dispose.");
+    if (priv->mix_pages)
+    {
+        g_list_free(priv->mix_pages);
+        priv->mix_pages = NULL;
+    }
+    G_OBJECT_CLASS(sm_appwin_parent_class)->dispose(object);
+}
+
+static void
 sm_appwin_class_init(SmAppWinClass *class)
 {
     GtkCssProvider *provider;
     GdkDisplay *display;
     GdkScreen *screen;
+
+    G_OBJECT_CLASS(class)->dispose = sm_appwin_dispose;
 
     provider = gtk_css_provider_new();
     display = gdk_display_get_default();
@@ -175,9 +193,11 @@ sm_appwin_init_strips(gpointer data)
     GtkBox *box;
     GtkLabel *label;
     gint idx;
+    gchar *channel_name;
 
     arg = (SmAppWinInitArg*)data;
     ch = SM_CHANNEL(arg->list->data);
+    channel_name = g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch));
     switch (sm_channel_get_channel_type(ch))
     {
         case SM_CHANNEL_MASTER:
@@ -197,7 +217,7 @@ sm_appwin_init_strips(gpointer data)
             strip = sm_strip_new(ch);
             for (item = g_list_first(arg->priv->mix_pages); item; item = g_list_next(item))
             {
-                if (g_strcmp0(gtk_widget_get_name(GTK_WIDGET(item->data)), g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch))) == 0)
+                if (g_strcmp0(gtk_widget_get_name(GTK_WIDGET(item->data)), channel_name) == 0)
                 {
                     g_debug("Found page for Mix %c.", sm_channel_get_mix_id(ch));
                     break;
@@ -205,14 +225,14 @@ sm_appwin_init_strips(gpointer data)
             }
             if (!item)
             {
-                box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, SM_APP_WIN_BOX_PADDING));
-                gtk_widget_set_margin_start(GTK_WIDGET(box), SM_APP_WIN_BOX_MARGIN);
-                gtk_widget_set_margin_end(GTK_WIDGET(box), SM_APP_WIN_BOX_MARGIN);
-                gtk_widget_set_margin_top(GTK_WIDGET(box), SM_APP_WIN_BOX_MARGIN);
-                gtk_widget_set_margin_bottom(GTK_WIDGET(box), SM_APP_WIN_BOX_MARGIN);
-                gtk_widget_set_name(GTK_WIDGET(box), g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch)));
-                arg->priv->mix_pages = g_list_append(arg->priv->mix_pages, box);
-                label = GTK_LABEL(gtk_label_new(g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch))));
+                box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, SM_APPWIN_BOX_PADDING));
+                gtk_widget_set_margin_start(GTK_WIDGET(box), SM_APPWIN_BOX_MARGIN);
+                gtk_widget_set_margin_end(GTK_WIDGET(box), SM_APPWIN_BOX_MARGIN);
+                gtk_widget_set_margin_top(GTK_WIDGET(box), SM_APPWIN_BOX_MARGIN);
+                gtk_widget_set_margin_bottom(GTK_WIDGET(box), SM_APPWIN_BOX_MARGIN);
+                gtk_widget_set_name(GTK_WIDGET(box), channel_name);
+                arg->priv->mix_pages = g_list_prepend(arg->priv->mix_pages, box);
+                label = GTK_LABEL(gtk_label_new(channel_name));
                 idx = gtk_notebook_append_page(arg->priv->output_mix_notebook, GTK_WIDGET(box), GTK_WIDGET(label));
             }
             else
@@ -232,6 +252,7 @@ sm_appwin_init_strips(gpointer data)
             break;
         }
     }
+    g_free(channel_name);
     arg->list = g_list_next(arg->list);
     if (arg->list)
     {
@@ -239,6 +260,7 @@ sm_appwin_init_strips(gpointer data)
     }
     else
     {
+        arg->priv->mix_pages = g_list_reverse(arg->priv->mix_pages);
         gtk_stack_set_visible_child_name(arg->priv->main_stack, "output");
         g_free(arg);
         return FALSE;
@@ -256,12 +278,15 @@ sm_appwin_init_input_sources(gpointer data)
     GtkComboBoxText *comboboxtext;
     GtkStyleContext *style_ctx;
     gint idx;
+    gchar *name;
 
     arg = (SmAppWinInitArg*)data;
     src = SM_SOURCE(arg->list->data);
-    box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, SM_APP_WIN_BOX_PADDING));
+    box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, SM_APPWIN_BOX_PADDING));
     sscanf(sm_source_get_name(src), "Input Source %02u", &idx);
-    label = GTK_LABEL(gtk_label_new(g_strdup_printf("Input %d", idx)));
+    name = g_strdup_printf("Input %d", idx);
+    label = GTK_LABEL(gtk_label_new(name));
+    g_free(name);
     gtk_box_pack_start(box, GTK_WIDGET(label), FALSE, FALSE, 0);
     comboboxtext = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
     style_ctx = gtk_widget_get_style_context(GTK_WIDGET(comboboxtext));
@@ -269,6 +294,7 @@ sm_appwin_init_input_sources(gpointer data)
     for (item = g_list_first(sm_source_get_item_names(src)); item; item = g_list_next(item))
     {
         gtk_combo_box_text_append_text(comboboxtext, item->data);
+        g_free(item->data);
     }
     idx = sm_source_get_selected_item_index(src);
     if (idx < 0) {
@@ -277,7 +303,7 @@ sm_appwin_init_input_sources(gpointer data)
     else {
         gtk_combo_box_set_active(GTK_COMBO_BOX(comboboxtext), idx);
     }
-    g_signal_connect (GTK_WIDGET(comboboxtext), "changed", G_CALLBACK(sm_appwin_comboboxtext_changed_cb), src);
+    g_signal_connect(GTK_WIDGET(comboboxtext), "changed", G_CALLBACK(sm_appwin_comboboxtext_changed_cb), src);
     g_signal_connect(src, "changed", G_CALLBACK(sm_appwin_source_changed_cb), comboboxtext);
     gtk_box_pack_start(box, GTK_WIDGET(comboboxtext), FALSE, FALSE, 0);
     gtk_box_pack_start(arg->priv->input_sources_box, GTK_WIDGET(box), FALSE, FALSE, 0);
@@ -330,7 +356,7 @@ sm_appwin_new(SmApp *app, const gchar* prefix)
     priv = sm_appwin_get_instance_private(win);
     priv->app = app;
     priv->prefix = prefix;
-    g_timeout_add(SM_APP_WIN_INIT_TIMEOUT, sm_appwin_check_for_interface, (gpointer)win);
+    g_timeout_add(SM_APPWIN_INIT_TIMEOUT, sm_appwin_check_for_interface, (gpointer)win);
     return win;
 }
 

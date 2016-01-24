@@ -53,6 +53,8 @@ static void
 sm_channel_finalize(GObject *gobject)
 {
     SmChannel *self = SM_CHANNEL(gobject);
+
+    g_debug("sm_channel_finalize: %s", self->name);
     g_free(self->name);
     g_free(self->display_name);
     /* Always chain up to the parent class; as with dispose(), finalize()
@@ -334,10 +336,10 @@ sm_channel_source_get_item_names(SmChannel *self, snd_mixer_selem_channel_id_t c
     }
     for(idx = 0; idx < snd_mixer_selem_get_enum_items(elem); idx++) {
         if(snd_mixer_selem_get_enum_item_name(elem, idx, 16, buf) == 0) {
-            ret = g_list_append(ret, g_strdup(buf));
+            ret = g_list_prepend(ret, g_strdup(buf));
         }
     }
-    return ret;
+    return g_list_reverse(ret);
 }
 
 int

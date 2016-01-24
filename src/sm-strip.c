@@ -18,6 +18,7 @@ typedef struct _SmStripPrivate SmStripPrivate;
 struct _SmStripPrivate
 {
     SmChannel *channel;
+    gulong changed_handler_id;
     GtkEntry *name_entry;
     GtkComboBoxText *left_scale_source_comboboxtext;
     GtkScale *left_scale;
@@ -194,11 +195,29 @@ sm_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
 }
 
 static void
+sm_strip_dispose(GObject *object)
+{
+    SmStripPrivate *priv;
+
+    priv = sm_strip_get_instance_private(SM_STRIP(object));
+    if (priv->channel)
+        g_debug("sm_strip_dispose: %s", sm_channel_get_name(priv->channel));
+    if (priv->channel)
+    {
+        g_signal_handler_disconnect(priv->channel, priv->changed_handler_id);
+        priv->channel = NULL;
+    }
+    G_OBJECT_CLASS(sm_strip_parent_class)->dispose(object);
+}
+
+static void
 sm_strip_class_init(SmStripClass *class)
 {
     GtkCssProvider *provider;
     GdkDisplay *display;
     GdkScreen *screen;
+
+    G_OBJECT_CLASS(class)->dispose = sm_strip_dispose;
 
     provider = gtk_css_provider_new();
     display = gdk_display_get_default();
@@ -278,8 +297,10 @@ sm_strip_new(SmChannel *channel)
         list = sm_channel_source_get_item_names(priv->channel, SND_MIXER_SCHN_FRONT_LEFT);
         for(list = g_list_first(list); list; list = g_list_next(list))
         {
-            gtk_combo_box_text_append_text(priv->left_scale_source_comboboxtext, g_strdup(list->data));
+            gtk_combo_box_text_append_text(priv->left_scale_source_comboboxtext, (gchar*)list->data);
+            g_free(list->data);
         }
+        g_list_free(list);
         idx = sm_channel_source_get_selected_item_index(priv->channel, SND_MIXER_SCHN_FRONT_LEFT);
         if (idx < 0)
         {
@@ -299,8 +320,10 @@ sm_strip_new(SmChannel *channel)
         list = sm_channel_source_get_item_names(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT);
         for(list = g_list_first(list); list; list = g_list_next(list))
         {
-            gtk_combo_box_text_append_text(priv->right_scale_source_comboboxtext, g_strdup(list->data));
+            gtk_combo_box_text_append_text(priv->right_scale_source_comboboxtext, (gchar*)list->data);
+            g_free(list->data);
         }
+        g_list_free(list);
         idx = sm_channel_source_get_selected_item_index(priv->channel, SND_MIXER_SCHN_FRONT_RIGHT);
         if (idx < 0)
         {
@@ -371,7 +394,10 @@ sm_strip_new(SmChannel *channel)
         }
     }
 
-    g_signal_connect(SM_CHANNEL(priv->channel), "changed", G_CALLBACK(sm_strip_channel_changed_cb), strip);
+    priv->changed_handler_id = g_signal_connect(SM_CHANNEL(priv->channel),
+            "changed",
+            G_CALLBACK(sm_strip_channel_changed_cb),
+            strip);
     return strip;
 }
 

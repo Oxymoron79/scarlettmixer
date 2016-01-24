@@ -30,7 +30,7 @@ static const gchar *prefix_intel = "HDA Intel";
 static const gchar *prefix = "Scarlett";
 
 static void
-about_activated(GSimpleAction *action,
+sm_app_on_about(GSimpleAction *action,
         GVariant *parameter,
         gpointer app)
 {
@@ -54,7 +54,7 @@ about_activated(GSimpleAction *action,
 }
 
 static void
-quit_activated(GSimpleAction *action,
+sm_app_on_quit(GSimpleAction *action,
         GVariant *parameter,
         gpointer app)
 {
@@ -63,8 +63,8 @@ quit_activated(GSimpleAction *action,
 
 static GActionEntry app_actions[] =
 {
-    { "about", about_activated, NULL, NULL, NULL },
-    { "quit", quit_activated, NULL, NULL, NULL }
+    { "about", sm_app_on_about, NULL, NULL, NULL },
+    { "quit", sm_app_on_quit, NULL, NULL, NULL }
 };
 
 static void
@@ -130,17 +130,48 @@ sm_app_startup(GApplication *app)
     builder = gtk_builder_new_from_resource("/org/alsa/scarlettmixer/sm-appmenu.ui");
     app_menu = G_MENU_MODEL(gtk_builder_get_object(builder, "app_menu"));
     gtk_application_set_app_menu(GTK_APPLICATION(app), app_menu);
-    g_object_unref (builder);
+    g_object_unref(builder);
 }
 
 static void
 sm_app_shutdown(GApplication *app)
 {
     SmApp *sm_app;
+    GList* item;
+    int err;
 
     g_debug("sm_app_shutdown.");
     sm_app = SM_APP(app);
 
+    for (item = g_list_first(sm_app->channels); item; item = g_list_next(item))
+    {
+        g_object_unref(item->data);
+    }
+    g_list_free(sm_app->channels);
+    sm_app->channels = NULL;
+    for (item = g_list_first(sm_app->input_sources); item; item = g_list_next(item))
+    {
+        g_object_unref(item->data);
+    }
+    g_list_free(sm_app->input_sources);
+    sm_app->input_sources = NULL;
+    snd_ctl_card_info_free(sm_app->card_info);
+    err = snd_mixer_close(sm_app->mixer);
+    if (err < 0)
+    {
+        g_debug("sm_app_shutdown: Failed to close mixer: %s", snd_strerror(err));
+    }
+    /*snd_mixer_free(sm_app->mixer);
+    err = snd_hctl_close(sm_app->hctl);
+    if (err < 0)
+    {
+        g_debug("sm_app_shutdown: Failed to close hctl: %s", snd_strerror(err));
+    }
+    err = snd_hctl_free(sm_app->hctl);
+    if (err < 0)
+    {
+        g_debug("sm_app_shutdown: Failed to free hctl: %s", snd_strerror(err));
+    }*/
     G_APPLICATION_CLASS(sm_app_parent_class)->shutdown(app);
 }
 
@@ -324,6 +355,7 @@ sm_app_open_mixer(SmApp *app, int card_number)
     if (err < 0)
     {
         g_critical("Cannot open mixer: %s", snd_strerror(err));
+        g_free((gpointer)selem_regopt.device);
         return NULL;
     }
 
@@ -331,22 +363,27 @@ sm_app_open_mixer(SmApp *app, int card_number)
     if (err < 0)
     {
         g_critical("Cannot register simple mixer: %s", snd_strerror(err));
+        g_free((gpointer)selem_regopt.device);
+        snd_mixer_close(app->mixer);
         return NULL;
     }
-
     snd_mixer_set_callback(app->mixer, sm_app_mixer_callback);
 
     err = snd_mixer_load(app->mixer);
     if (err < 0)
     {
         g_critical("Cannot load mixer controls: %s", snd_strerror(err));
+        g_free((gpointer)selem_regopt.device);
+        snd_mixer_close(app->mixer);
         return NULL;
     }
 
     err = snd_mixer_get_hctl(app->mixer, selem_regopt.device, &(app->hctl));
+    g_free((gpointer)selem_regopt.device);
     if (err < 0)
     {
         g_critical("Cannot get HCTL: %s", snd_strerror(err));
+        snd_mixer_close(app->mixer);
         return NULL;
     }/*
     else
@@ -366,6 +403,9 @@ sm_app_open_mixer(SmApp *app, int card_number)
     if (err < 0)
     {
         g_critical("Cannot read information from sound card: %s", snd_strerror(err));
+        snd_ctl_card_info_free(app->card_info);
+        snd_mixer_close(app->mixer);
+        snd_hctl_free(app->hctl);
         return NULL;
     }
     app->card_name = snd_ctl_card_info_get_name(app->card_info);
@@ -406,7 +446,7 @@ sm_app_open_mixer(SmApp *app, int card_number)
                     && !snd_mixer_selem_is_enum_playback(elem)
                     && !snd_mixer_selem_is_enum_capture(elem))
             {
-                /* Switch */
+                /* TODO: Switch */
             }
             else if (snd_mixer_selem_is_enumerated(elem)
                     && !snd_mixer_selem_is_enum_playback(elem)
@@ -418,7 +458,7 @@ sm_app_open_mixer(SmApp *app, int card_number)
                 {
                     g_debug("Created input source for mixer element %s.",
                             snd_mixer_selem_get_name(elem));
-                    app->input_sources = g_list_append(app->input_sources, src);
+                    app->input_sources = g_list_prepend(app->input_sources, src);
                 }
             }
             else
@@ -434,7 +474,7 @@ sm_app_open_mixer(SmApp *app, int card_number)
                             sm_channel_has_volume(ch, SND_MIXER_SCHN_FRONT_LEFT));
                     g_debug("    Has right channel: %d.",
                             sm_channel_has_volume(ch, SND_MIXER_SCHN_FRONT_RIGHT));
-                    app->channels = g_list_append(app->channels, ch);
+                    app->channels = g_list_prepend(app->channels, ch);
                 }
                 else
                 {
@@ -445,6 +485,8 @@ sm_app_open_mixer(SmApp *app, int card_number)
             }
         }
     }
+    app->input_sources = g_list_reverse(app->input_sources);
+    app->channels = g_list_reverse(app->channels);
     /* Go through list again to add remaining Matrix XX Input Sources */
     for (elem = snd_mixer_first_elem(app->mixer); elem; elem = snd_mixer_elem_next(elem))
     {
@@ -472,6 +514,7 @@ sm_app_init(SmApp *app)
 {
     g_debug("sm_app_init.");
 }
+
 
 SmApp *
 sm_app_new()

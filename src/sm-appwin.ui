@@ -137,7 +137,7 @@ Please make sure the interface is connected and is powered on.</property>
                     <property name="receives_default">True</property>
                     <property name="use_stock">True</property>
                     <property name="always_show_image">True</property>
-                    <signal name="clicked" handler="refresh_button_clicked_cb" object="ScarlettMixerAppWindow" swapped="no"/>
+                    <signal name="clicked" handler="refresh_button_clicked_cb" object="SmAppWin" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
