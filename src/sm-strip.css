@@ -6,6 +6,9 @@
     padding: 2pt 5pt;
 }
 
+GtkEntry:insensitive {
+    color: @theme_text_color;
+}
 /* Set colors of levelbar */
 .level-bar.fill-block {
     border: 1px solid #5ec62a;
