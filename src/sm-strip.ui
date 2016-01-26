@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.19.0 -->
 <interface>
   <requires lib="gtk+" version="3.16"/>
-  <!-- interface-css-provider-path scarlettmixerstrip.css -->
+  <!-- interface-css-provider-path sm-strip.css -->
   <object class="GtkAdjustment" id="left_adjustment">
     <property name="upper">1.26</property>
     <property name="value">1</property>
@@ -35,6 +35,7 @@
           <object class="GtkComboBoxText" id="left_scale_source_comboboxtext">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="tooltip_text" translatable="yes">Select channel source.</property>
             <signal name="changed" handler="scale_source_comboboxtext_changed_cb" object="SmStrip" swapped="no"/>
             <style>
               <class name="small-text"/>
@@ -52,6 +53,7 @@
             <property name="height_request">200</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="tooltip_text" translatable="yes">Set channel volume.</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
             <property name="orientation">vertical</property>
@@ -74,6 +76,7 @@
           <object class="GtkComboBoxText" id="right_scale_source_comboboxtext">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="tooltip_text" translatable="yes">Select channel source.</property>
             <signal name="changed" handler="scale_source_comboboxtext_changed_cb" object="SmStrip" swapped="no"/>
             <style>
               <class name="small-text"/>
@@ -91,6 +94,7 @@
             <property name="height_request">200</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="tooltip_text" translatable="yes">Set channel volume.</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
             <property name="orientation">vertical</property>
@@ -146,6 +150,7 @@
         <child>
           <object class="GtkScale" id="left_balance_scale">
             <property name="can_focus">True</property>
+            <property name="tooltip_text" translatable="yes">Set channel balance.</property>
             <property name="adjustment">left_balance_adjustment</property>
             <property name="round_digits">1</property>
             <property name="draw_value">False</property>
@@ -159,6 +164,7 @@
         <child>
           <object class="GtkScale" id="right_balance_scale">
             <property name="can_focus">True</property>
+            <property name="tooltip_text" translatable="yes">Set channel balance.</property>
             <property name="adjustment">left_balance_adjustment</property>
             <property name="draw_value">False</property>
           </object>
@@ -174,6 +180,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Mute channel.</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
             <signal name="toggled" handler="mute_togglebutton_toggled_cb" object="SmStrip" swapped="no"/>
@@ -193,6 +200,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Mute channel.</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
             <signal name="toggled" handler="mute_togglebutton_toggled_cb" object="SmStrip" swapped="no"/>
@@ -212,6 +220,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Join the mono channels</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="active">True</property>
@@ -236,6 +245,7 @@
       <object class="GtkEntry" id="name_entry">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
+        <property name="tooltip_text" translatable="yes">Channel name.</property>
         <property name="margin_top">2</property>
         <property name="width_chars">0</property>
         <property name="max_width_chars">14</property>
