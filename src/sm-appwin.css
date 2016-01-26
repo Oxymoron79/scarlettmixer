@@ -1,3 +1,8 @@
+.overlay {
+    background-color: @theme_bg_color;
+    border-bottom: 1pt solid darker(@theme_bg_color);
+}
+
 GtkViewport {
     background-color: @theme_base_color;
 }
