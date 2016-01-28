@@ -45,7 +45,7 @@ struct _SmAppWinPrivate
     SmApp *app;
     const gchar* prefix;
     GtkLabel *card_name_label;
-    GtkToggleButton *reveal_input_sources_togglebutton;
+    GtkToggleButton *reveal_input_config_togglebutton;
     GtkStack *main_stack;
     GtkNotebook *output_mix_notebook;
     GList *mix_pages;
@@ -107,7 +107,7 @@ refresh_button_clicked_cb(GtkButton *button, gpointer data)
 }
 
 static void
-reveal_input_sources_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpointer user_data)
+reveal_input_config_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpointer user_data)
 {
     gboolean active;
     GtkRevealer *revealer = GTK_REVEALER(user_data);
@@ -156,7 +156,7 @@ sm_appwin_class_init(SmAppWinClass *class)
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             SmAppWin, card_name_label);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
-            SmAppWin, reveal_input_sources_togglebutton);
+            SmAppWin, reveal_input_config_togglebutton);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             SmAppWin, main_stack);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
@@ -169,7 +169,7 @@ sm_appwin_class_init(SmAppWinClass *class)
             SmAppWin, input_switches_box);
 
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
-            reveal_input_sources_togglebutton_toggled_cb);
+            reveal_input_config_togglebutton_toggled_cb);
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
             refresh_button_clicked_cb);
 }
@@ -332,7 +332,7 @@ sm_appwin_init_input_sources(gpointer data)
     }
     else
     {
-        gtk_widget_show(GTK_WIDGET(arg->priv->reveal_input_sources_togglebutton));
+        gtk_widget_show(GTK_WIDGET(arg->priv->reveal_input_config_togglebutton));
         gtk_widget_show_all(GTK_WIDGET(arg->priv->input_sources_box));
         g_free(arg);
         return FALSE;

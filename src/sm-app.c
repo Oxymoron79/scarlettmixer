@@ -179,17 +179,6 @@ sm_app_shutdown(GApplication *app)
     {
         g_debug("sm_app_shutdown: Failed to close mixer: %s", snd_strerror(err));
     }
-    /*snd_mixer_free(sm_app->mixer);
-    err = snd_hctl_close(sm_app->hctl);
-    if (err < 0)
-    {
-        g_debug("sm_app_shutdown: Failed to close hctl: %s", snd_strerror(err));
-    }
-    err = snd_hctl_free(sm_app->hctl);
-    if (err < 0)
-    {
-        g_debug("sm_app_shutdown: Failed to free hctl: %s", snd_strerror(err));
-    }*/
     G_APPLICATION_CLASS(sm_app_parent_class)->shutdown(app);
 }
 
@@ -532,7 +521,6 @@ sm_app_init(SmApp *app)
 {
     g_debug("sm_app_init.");
 }
-
 
 SmApp *
 sm_app_new()
