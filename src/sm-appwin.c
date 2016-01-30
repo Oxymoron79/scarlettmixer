@@ -23,6 +23,7 @@
 #include "sm-strip.h"
 #include "sm-channel.h"
 #include "sm-source.h"
+#include "sm-switch.h"
 
 #define SM_APPWIN_INIT_TIMEOUT (100)
 #define SM_APPWIN_BOX_MARGIN (5)
@@ -52,6 +53,8 @@ struct _SmAppWinPrivate
     GtkBox *output_channel_box;
     GtkBox *input_sources_box;
     GtkBox *input_switches_box;
+    GtkComboBoxText *sync_source_comboboxtext;
+    GtkEntry *sync_status_entry;
 };
 
 typedef struct _SmAppWinInitArg SmAppWinInitArg;
@@ -167,6 +170,10 @@ sm_appwin_class_init(SmAppWinClass *class)
             SmAppWin, input_sources_box);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             SmAppWin, input_switches_box);
+    gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
+            SmAppWin, sync_source_comboboxtext);
+    gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
+            SmAppWin, sync_status_entry);
 
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
             reveal_input_config_togglebutton_toggled_cb);
@@ -182,7 +189,7 @@ sm_appwin_init(SmAppWin *win)
 }
 
 static void
-sm_appwin_comboboxtext_changed_cb(GtkComboBox *combo, gpointer user_data)
+sm_appwin_source_comboboxtext_changed_cb(GtkComboBox *combo, gpointer user_data)
 {
     SmSource *src = SM_SOURCE(user_data);
     int active_idx;
@@ -199,6 +206,32 @@ sm_appwin_source_changed_cb(SmSource *src, gpointer user_data)
 
     active_idx = sm_source_get_selected_item_index(src);
     gtk_combo_box_set_active(GTK_COMBO_BOX(comboboxtext), active_idx);
+}
+
+static void
+sm_appwin_switch_comboboxtext_changed_cb(GtkComboBox *combo, gpointer user_data)
+{
+    SmSwitch *sw = SM_SWITCH(user_data);
+    int active_idx;
+
+    active_idx = gtk_combo_box_get_active(combo);
+    sm_switch_set_selected_item_index(sw, active_idx);
+}
+
+static void
+sm_appwin_switch_changed_cb(SmSwitch *sw, gpointer user_data)
+{
+    GtkComboBoxText *comboboxtext = GTK_COMBO_BOX_TEXT(user_data);
+    int active_idx;
+
+    active_idx = sm_switch_get_selected_item_index(sw);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(comboboxtext), active_idx);
+}
+
+static void
+sm_appwin_sync_changed_cb(SmSwitch *sw, gpointer user_data)
+{
+    gtk_entry_set_text(GTK_ENTRY(user_data), sm_switch_get_selected_item_name(sw));
 }
 
 static gboolean
@@ -321,7 +354,7 @@ sm_appwin_init_input_sources(gpointer data)
     else {
         gtk_combo_box_set_active(GTK_COMBO_BOX(comboboxtext), idx);
     }
-    g_signal_connect(GTK_WIDGET(comboboxtext), "changed", G_CALLBACK(sm_appwin_comboboxtext_changed_cb), src);
+    g_signal_connect(GTK_WIDGET(comboboxtext), "changed", G_CALLBACK(sm_appwin_source_comboboxtext_changed_cb), src);
     g_signal_connect(src, "changed", G_CALLBACK(sm_appwin_source_changed_cb), comboboxtext);
     gtk_box_pack_start(box, GTK_WIDGET(comboboxtext), FALSE, FALSE, 0);
     gtk_box_pack_start(arg->priv->input_sources_box, GTK_WIDGET(box), FALSE, FALSE, 0);
@@ -339,11 +372,88 @@ sm_appwin_init_input_sources(gpointer data)
     }
 }
 
+static gboolean
+sm_appwin_init_input_switches(gpointer data)
+{
+    SmAppWinInitArg *arg;
+    SmSwitch *sw;
+    GList *item;
+    GtkBox *box;
+    GtkLabel *label;
+    GtkComboBoxText *comboboxtext;
+    GtkStyleContext *style_ctx;
+    gint idx, *switch_id;
+    gchar *name;
+    gboolean new_box;
+
+    arg = (SmAppWinInitArg*)data;
+    sw = SM_SWITCH(arg->list->data);
+    idx = sm_switch_get_id(sw);
+    item = gtk_container_get_children(GTK_CONTAINER(arg->priv->input_switches_box));
+    new_box = TRUE;
+    for (item = g_list_first(item); item; item = g_list_next(item))
+    {
+        box = GTK_BOX(item->data);
+        if (*((gint*)g_object_get_data(G_OBJECT(box), "switch_id")) == idx)
+        {
+            new_box = FALSE;
+            break;
+        }
+    }
+    if (new_box)
+    {
+        box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, SM_APPWIN_BOX_PADDING));
+        switch_id = g_malloc0(sizeof(gint));
+        *switch_id = idx;
+        g_object_set_data(G_OBJECT(box), "switch_id", (gpointer)switch_id);
+        new_box = TRUE;
+    }
+    label = GTK_LABEL(gtk_label_new(sm_switch_get_name(sw)));
+    gtk_box_pack_start(box, GTK_WIDGET(label), FALSE, FALSE, 0);
+    comboboxtext = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
+    style_ctx = gtk_widget_get_style_context(GTK_WIDGET(comboboxtext));
+    gtk_style_context_add_class(style_ctx, "small-text");
+    for (item = g_list_first(sm_switch_get_item_names(sw)); item; item = g_list_next(item))
+    {
+        gtk_combo_box_text_append_text(comboboxtext, item->data);
+        g_free(item->data);
+    }
+    idx = sm_switch_get_selected_item_index(sw);
+    if (idx < 0) {
+        g_warning("Could not get active enum item!");
+    }
+    else {
+        gtk_combo_box_set_active(GTK_COMBO_BOX(comboboxtext), idx);
+    }
+    g_signal_connect(GTK_WIDGET(comboboxtext), "changed", G_CALLBACK(sm_appwin_switch_comboboxtext_changed_cb), sw);
+    g_signal_connect(sw, "changed", G_CALLBACK(sm_appwin_switch_changed_cb), comboboxtext);
+    gtk_box_pack_start(box, GTK_WIDGET(comboboxtext), FALSE, FALSE, 0);
+    if (new_box)
+    {
+        gtk_box_pack_start(arg->priv->input_switches_box, GTK_WIDGET(box), FALSE, FALSE, 0);
+    }
+    arg->list = g_list_next(arg->list);
+    if (arg->list)
+    {
+        return TRUE;
+    }
+    else
+    {
+        gtk_widget_show(GTK_WIDGET(arg->priv->reveal_input_config_togglebutton));
+        gtk_widget_show_all(GTK_WIDGET(arg->priv->input_switches_box));
+        g_free(arg);
+        return FALSE;
+    }
+}
+
 static void
 sm_appwin_init_channels(SmAppWin *win, const gchar *card_name)
 {
     SmAppWinPrivate *priv;
     SmAppWinInitArg *arg;
+    SmSwitch *sw;
+    GList *item;
+    gint idx;
 
     g_debug("sm_appwin_init_channels.");
     priv = sm_appwin_get_instance_private(win);
@@ -361,6 +471,31 @@ sm_appwin_init_channels(SmAppWin *win, const gchar *card_name)
     arg->priv = priv;
     arg->list = g_list_first(sm_app_get_input_sources(priv->app));
     g_idle_add(sm_appwin_init_input_sources, arg);
+
+    arg = g_malloc0(sizeof(SmAppWinInitArg));
+    arg->priv = priv;
+    arg->list = g_list_first(sm_app_get_input_switches(priv->app));
+    g_idle_add(sm_appwin_init_input_switches, arg);
+
+    sw = sm_app_get_clock_source(priv->app);
+    for (item = g_list_first(sm_switch_get_item_names(sw)); item; item = g_list_next(item))
+    {
+        gtk_combo_box_text_append_text(priv->sync_source_comboboxtext, item->data);
+        g_free(item->data);
+    }
+    idx = sm_switch_get_selected_item_index(sw);
+    if (idx < 0) {
+        g_warning("Could not get active enum item!");
+    }
+    else {
+        gtk_combo_box_set_active(GTK_COMBO_BOX(priv->sync_source_comboboxtext), idx);
+    }
+    g_signal_connect(GTK_WIDGET(priv->sync_source_comboboxtext), "changed", G_CALLBACK(sm_appwin_switch_comboboxtext_changed_cb), sw);
+    g_signal_connect(sw, "changed", G_CALLBACK(sm_appwin_switch_changed_cb), priv->sync_source_comboboxtext);
+
+    sw = sm_app_get_sync_status(priv->app);
+    gtk_entry_set_text(GTK_ENTRY(priv->sync_status_entry), sm_switch_get_selected_item_name(sw));
+    g_signal_connect(sw, "changed", G_CALLBACK(sm_appwin_sync_changed_cb), priv->sync_status_entry);
 }
 
 SmAppWin *

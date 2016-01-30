@@ -23,6 +23,7 @@
 #include "sm-appwin.h"
 #include "sm-channel.h"
 #include "sm-source.h"
+#include "sm-switch.h"
 
 struct _SmAppClass
 {
@@ -39,6 +40,10 @@ struct _SmApp
     snd_mixer_t *mixer;
     GList *channels;
     GList *input_sources;
+    GList *input_switches;
+    SmSwitch *clock_source;
+    SmSwitch *sync_status;
+    SmSwitch *usb_sync;
 };
 
 G_DEFINE_TYPE(SmApp, sm_app, GTK_TYPE_APPLICATION);
@@ -173,6 +178,12 @@ sm_app_shutdown(GApplication *app)
     }
     g_list_free(sm_app->input_sources);
     sm_app->input_sources = NULL;
+    for (item = g_list_first(sm_app->input_switches); item; item = g_list_next(item))
+    {
+        g_object_unref(item->data);
+    }
+    g_list_free(sm_app->input_switches);
+    sm_app->input_switches = NULL;
     snd_ctl_card_info_free(sm_app->card_info);
     err = snd_mixer_close(sm_app->mixer);
     if (err < 0)
@@ -250,6 +261,7 @@ sm_app_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned int mask)
     SmApp *app;
     SmChannel *ch;
     SmSource *src;
+    SmSwitch *sw;
     GList *list;
 
     if (mask == SND_CTL_EVENT_MASK_REMOVE)
@@ -276,6 +288,7 @@ sm_app_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned int mask)
                         sm_channel_get_name(ch),
                         snd_mixer_selem_get_name(elem));
                 sm_channel_mixer_elem_changed(ch, elem);
+                break;
             }
         }
         for (list = g_list_first(app->input_sources); list; list = g_list_next(list))
@@ -288,6 +301,38 @@ sm_app_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned int mask)
                         snd_mixer_selem_get_name(elem));
                 sm_source_mixer_elem_changed(src, elem);
                 break;
+            }
+        }
+        for (list = g_list_first(app->input_switches); list; list = g_list_next(list))
+        {
+            sw = SM_SWITCH(list->data);
+            if (sm_switch_has_mixer_elem(sw, elem))
+            {
+                g_debug("sm_app_mixer_elem_callback: Switch %s has element %s",
+                        sm_switch_get_name(sw),
+                        snd_mixer_selem_get_name(elem));
+                sm_switch_mixer_elem_changed(sw, elem);
+                break;
+            }
+        }
+        if (app->clock_source)
+        {
+            if (sm_switch_has_mixer_elem(app->clock_source, elem))
+            {
+                g_debug("sm_app_mixer_elem_callback: Switch %s has element %s",
+                        sm_switch_get_name(app->clock_source),
+                        snd_mixer_selem_get_name(elem));
+                sm_switch_mixer_elem_changed(app->clock_source, elem);
+            }
+        }
+        if (app->sync_status)
+        {
+            if (sm_switch_has_mixer_elem(app->sync_status, elem))
+            {
+                g_debug("sm_app_mixer_elem_callback: Switch %s has element %s",
+                        sm_switch_get_name(app->sync_status),
+                        snd_mixer_selem_get_name(elem));
+                sm_switch_mixer_elem_changed(app->sync_status, elem);
             }
         }
     }
@@ -453,7 +498,33 @@ sm_app_open_mixer(SmApp *app, int card_number)
                     && !snd_mixer_selem_is_enum_playback(elem)
                     && !snd_mixer_selem_is_enum_capture(elem))
             {
-                /* TODO: Switch */
+                /* Input Switch */
+                SmSwitch *sw = sm_switch_new();
+                if (sm_switch_add_mixer_elem(sw, elem))
+                {
+                    g_debug("Created input switch for mixer element %s.",
+                            snd_mixer_selem_get_name(elem));
+                    switch (sm_switch_get_switch_type(sw))
+                    {
+                        case SM_SWITCH_INPUT_IMPEDANCE:
+                        case SM_SWITCH_INPUT_PAD:
+                            app->input_switches = g_list_prepend(app->input_switches, sw);
+                            break;
+                        case SM_SWITCH_CLOCK_SOURCE:
+                            app->clock_source = sw;
+                            break;
+                        case SM_SWITCH_SYNC_STATUS:
+                            app->sync_status = sw;
+                            break;
+                        case SM_SWITCH_USB_SYNC:
+                            app->usb_sync = sw;
+                            break;
+                        default:
+                            g_warning("Unhandled switch: %s", sm_switch_get_name(sw));
+                            g_object_unref(sw);
+                            break;
+                    }
+                }
             }
             else if (snd_mixer_selem_is_enumerated(elem)
                     && !snd_mixer_selem_is_enum_playback(elem)
@@ -470,6 +541,7 @@ sm_app_open_mixer(SmApp *app, int card_number)
             }
             else
             {
+                /* Channel */
                 SmChannel *ch = sm_channel_new();
                 if (sm_channel_add_mixer_elem(ch, elem))
                 {
@@ -492,6 +564,7 @@ sm_app_open_mixer(SmApp *app, int card_number)
             }
         }
     }
+    app->input_switches = g_list_reverse(app->input_switches);
     app->input_sources = g_list_reverse(app->input_sources);
     app->channels = g_list_reverse(app->channels);
     /* Go through list again to add remaining Matrix XX Input Sources */
@@ -532,14 +605,32 @@ sm_app_new()
                         NULL);
 }
 
-GList *
+GList*
 sm_app_get_channels(SmApp *app)
 {
     return app->channels;
 }
 
-GList *
+GList*
 sm_app_get_input_sources(SmApp *app)
 {
     return app->input_sources;
+}
+
+GList*
+sm_app_get_input_switches(SmApp *app)
+{
+    return app->input_switches;
+}
+
+SmSwitch*
+sm_app_get_clock_source(SmApp *app)
+{
+    return app->clock_source;
+}
+
+SmSwitch*
+sm_app_get_sync_status(SmApp *app)
+{
+    return app->sync_status;
 }

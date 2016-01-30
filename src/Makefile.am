@@ -5,7 +5,8 @@ scarlettmixer_LDADD=@ALSA_LIBS@ @GTK_LIBS@ -lm
 scarlettmixer_SOURCES=			\
 	scarlettmixer.c				\
 	sm-channel.c sm-channel.h	\
-	sm-source.c sm-sourcel.h	\
+	sm-source.c sm-source.h		\
+	sm-switch.c sm-sswitch.h	\
 	sm-app.c sm-app.h			\
 	sm-appwin.c sm-appwin.h		\
 	sm-strip.c sm-strip.h		\
