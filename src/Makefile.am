@@ -19,6 +19,7 @@ sm-appresources.c: sm-app.gresource.xml \
                    sm-strip.ui \
                    sm-appmenu.ui \
                    sm-strip.css \
-                   sm-appwin.css
+                   sm-appwin.css \
+                   sm-icon-stereo.svg
 	$(AM_V_GEN) glib-compile-resources $(srcdir)/sm-app.gresource.xml \
 		--target=$@ --sourcedir=$(srcdir) --generate-source

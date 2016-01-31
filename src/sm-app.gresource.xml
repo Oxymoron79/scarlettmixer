@@ -6,5 +6,6 @@
     <file preprocess="xml-stripblanks">sm-strip.ui</file>
     <file>sm-appwin.css</file>
     <file>sm-strip.css</file>
+    <file>sm-icon-stereo.svg</file>
   </gresource>
 </gresources>

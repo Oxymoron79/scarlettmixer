@@ -216,14 +216,21 @@
         </child>
         <child>
           <object class="GtkToggleButton" id="join_togglebutton">
-            <property name="label" translatable="yes">⚭</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="tooltip_text" translatable="yes">Join the mono channels</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
+            <property name="always_show_image">True</property>
             <property name="active">True</property>
+            <child>
+              <object class="GtkImage" id="stereo-image">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="resource">/org/alsa/scarlettmixer/sm-icon-stereo.svg</property>
+              </object>
+            </child>
             <style>
               <class name="small-button"/>
             </style>
