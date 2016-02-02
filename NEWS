@@ -1,1 +1,5 @@
-Sample NEWS file for scarlettmixer project.
+What is in scarlettmixer 0.1.0:
+
+* Detection of Scarlett audio interface on startup.
+* Bi-directional synchonization: Changes made in another mixer application
+  like alsamixer are immediately reflected in scarlettmixer.
