@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Scarlett Mixer
+Version=0.1
+Comment=Mixer for Scarlett audio interfaces.
+Exec=scarlettmixer
+Icon=ScarlettMixer
+Terminal=false
+Type=Application
+Categories=GTK;AudioVideo;
+StartupNotify=true

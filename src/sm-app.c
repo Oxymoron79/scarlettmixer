@@ -60,14 +60,14 @@ sm_app_on_about(GSimpleAction *action,
     GList *windows = NULL;
     GtkWindow *win;
     const gchar *authors[2];
-    authors[0] = "Martin Rösch <"PACKAGE_BUGREPORT">";
+    authors[0] = "Martin Rösch";
     authors[1] = NULL;
 
     g_debug("about_activated");
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     win = GTK_WINDOW(g_list_first(windows)->data);
     gtk_show_about_dialog(win,
-            "logo", gtk_window_get_icon(win),
+            "logo-icon-name", gtk_window_get_icon_name(win),
             "authors", authors,
             "version", PACKAGE_VERSION,
             "comments", "Mixer for the Scarlett USB audio interfaces.",
@@ -184,11 +184,17 @@ sm_app_shutdown(GApplication *app)
     }
     g_list_free(sm_app->input_switches);
     sm_app->input_switches = NULL;
-    snd_ctl_card_info_free(sm_app->card_info);
-    err = snd_mixer_close(sm_app->mixer);
-    if (err < 0)
+    if (sm_app->card_info)
     {
-        g_debug("sm_app_shutdown: Failed to close mixer: %s", snd_strerror(err));
+        snd_ctl_card_info_free(sm_app->card_info);
+    }
+    if (sm_app->mixer)
+    {
+        err = snd_mixer_close(sm_app->mixer);
+        if (err < 0)
+        {
+            g_debug("sm_app_shutdown: Failed to close mixer: %s", snd_strerror(err));
+        }
     }
     G_APPLICATION_CLASS(sm_app_parent_class)->shutdown(app);
 }
