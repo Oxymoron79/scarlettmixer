@@ -294,7 +294,6 @@ sm_app_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned int mask)
                         sm_channel_get_name(ch),
                         snd_mixer_selem_get_name(elem));
                 sm_channel_mixer_elem_changed(ch, elem);
-                break;
             }
         }
         for (list = g_list_first(app->input_sources); list; list = g_list_next(list))

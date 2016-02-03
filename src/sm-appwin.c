@@ -21,6 +21,7 @@
 #include "sm-app.h"
 #include "sm-appwin.h"
 #include "sm-strip.h"
+#include "sm-mix-strip.h"
 #include "sm-channel.h"
 #include "sm-source.h"
 #include "sm-switch.h"
@@ -240,15 +241,16 @@ sm_appwin_init_strips(gpointer data)
     SmAppWinInitArg *arg;
     SmChannel *ch;
     SmStrip *strip;
-    GList *item;
+    SmMixStrip *mixstrip;
+    GList *page, *item;
     GtkBox *box;
     GtkLabel *label;
     gint idx;
-    gchar *channel_name;
+    const gchar *mix_ids;
+    gboolean pack_strip;
 
     arg = (SmAppWinInitArg*)data;
     ch = SM_CHANNEL(arg->list->data);
-    channel_name = g_strdup_printf("Mix %c", sm_channel_get_mix_id(ch));
     switch (sm_channel_get_channel_type(ch))
     {
         case SM_CHANNEL_MASTER:
@@ -265,45 +267,56 @@ sm_appwin_init_strips(gpointer data)
         }
         case SM_CHANNEL_MIX:
         {
-            strip = sm_strip_new(ch);
-            for (item = g_list_first(arg->priv->mix_pages); item; item = g_list_next(item))
+            pack_strip = TRUE;
+            mixstrip = NULL;
+            page = NULL;
+            item = NULL;
+            box = NULL;
+            for (page = g_list_first(arg->priv->mix_pages); page; page = g_list_next(page))
             {
-                if (g_strcmp0(gtk_widget_get_name(GTK_WIDGET(item->data)), channel_name) == 0)
+                mix_ids = gtk_widget_get_name(GTK_WIDGET(page->data));
+                if (mix_ids[0] != sm_channel_get_mix_id(ch) && mix_ids[1] != sm_channel_get_mix_id(ch))
                 {
-                    g_debug("Found page for Mix %c.", sm_channel_get_mix_id(ch));
-                    break;
+                    continue;
                 }
+                for (item = g_list_first(gtk_container_get_children(GTK_CONTAINER(page->data))); item; item = g_list_next(item))
+                {
+                    if (sm_mix_strip_add_channel(SM_MIX_STRIP(item->data), ch))
+                    {
+                        mixstrip = SM_MIX_STRIP(item->data);
+                        pack_strip = FALSE;
+                        break;
+                    }
+                }
+                box = GTK_BOX(page->data);
+                break;
             }
-            if (!item)
+            if (!mixstrip)
             {
+                mixstrip = sm_mix_strip_new(ch);
+            }
+            if (!page)
+            {
+                /* Create a new page widget */
+                mix_ids = sm_mix_strip_get_mix_ids(mixstrip);
                 box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, SM_APPWIN_BOX_PADDING));
                 gtk_widget_set_margin_start(GTK_WIDGET(box), SM_APPWIN_BOX_MARGIN);
                 gtk_widget_set_margin_end(GTK_WIDGET(box), SM_APPWIN_BOX_MARGIN);
                 gtk_widget_set_margin_top(GTK_WIDGET(box), SM_APPWIN_BOX_MARGIN);
                 gtk_widget_set_margin_bottom(GTK_WIDGET(box), SM_APPWIN_BOX_MARGIN);
-                gtk_widget_set_name(GTK_WIDGET(box), channel_name);
+                gtk_widget_set_name(GTK_WIDGET(box), mix_ids);
                 arg->priv->mix_pages = g_list_prepend(arg->priv->mix_pages, box);
-                label = GTK_LABEL(gtk_label_new(channel_name));
+                label = GTK_LABEL(gtk_label_new(g_strdup_printf("Mix %c & %c",mix_ids[0], mix_ids[1])));
                 idx = gtk_notebook_append_page(arg->priv->output_mix_notebook, GTK_WIDGET(box), GTK_WIDGET(label));
             }
-            else
+            if (pack_strip)
             {
-                for (idx = 0; idx < gtk_notebook_get_n_pages(arg->priv->output_mix_notebook); idx++)
-                {
-                    if (gtk_notebook_get_nth_page(arg->priv->output_mix_notebook, idx) == GTK_WIDGET(item->data))
-                    {
-                        g_debug("Found notebook page.");
-                        box = GTK_BOX(item->data);
-                        break;
-                    }
-                }
+                gtk_box_pack_start(box, GTK_WIDGET(mixstrip), FALSE, FALSE, 0);
+                gtk_widget_show(GTK_WIDGET(box));
             }
-            gtk_box_pack_start(box, GTK_WIDGET(strip), FALSE, FALSE, 0);
-            gtk_widget_show(GTK_WIDGET(box));
             break;
         }
     }
-    g_free(channel_name);
     arg->list = g_list_next(arg->list);
     if (arg->list)
     {
