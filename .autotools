@@ -68,13 +68,13 @@
 <option id="program-prefix" value=""/>
 <option id="program-suffix" value=""/>
 <option id="program-transform-name" value=""/>
-<option id="enable-maintainer-mode" value="true"/>
+<option id="enable-maintainer-mode" value="false"/>
 <flag id="CFLAGS" value="CFLAGS|CXXFLAGS">
-<flagvalue id="cflags-debug" value="true"/>
+<flagvalue id="cflags-debug" value="false"/>
 <flagvalue id="cflags-gprof" value="false"/>
 <flagvalue id="cflags-gcov" value="false"/>
 </flag>
-<option id="user" value=""/>
+<option id="user" value="CFLAGS=&quot;-g -O0&quot; CXXFLAGS=&quot;-g -O0&quot;"/>
 <option id="autogen" value="autogen.sh"/>
 <option id="autogenOpts" value=""/>
 </configuration>
