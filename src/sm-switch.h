@@ -11,7 +11,7 @@ G_BEGIN_DECLS
  * Final type declaration cannot be subclassed.
  */
 #define SM_TYPE_SWITCH sm_switch_get_type()
-G_DECLARE_FINAL_TYPE(SmSwitch, sm_switch, SM, SWITCH, GObject)
+G_DECLARE_FINAL_TYPE(SmSwitch, sm_switch, SM, SWITCH, GObject);
 
 typedef enum {
     SM_SWITCH_NONE,

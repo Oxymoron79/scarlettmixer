@@ -30,7 +30,7 @@ struct _SmSwitch
     gchar *type_name;
 };
 
-G_DEFINE_TYPE(SmSwitch, sm_switch, G_TYPE_OBJECT)
+G_DEFINE_TYPE(SmSwitch, sm_switch, G_TYPE_OBJECT);
 
 enum
 {

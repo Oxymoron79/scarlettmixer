@@ -36,7 +36,7 @@ struct _SmChannel
     gchar mix_id;
 };
 
-G_DEFINE_TYPE(SmChannel, sm_channel, G_TYPE_OBJECT)
+G_DEFINE_TYPE(SmChannel, sm_channel, G_TYPE_OBJECT);
 
 enum
 {

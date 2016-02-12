@@ -27,7 +27,7 @@ struct _SmSource
     gchar *name;
 };
 
-G_DEFINE_TYPE(SmSource, sm_source, G_TYPE_OBJECT)
+G_DEFINE_TYPE(SmSource, sm_source, G_TYPE_OBJECT);
 
 enum
 {

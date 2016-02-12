@@ -184,6 +184,21 @@ sm_app_shutdown(GApplication *app)
     }
     g_list_free(sm_app->input_switches);
     sm_app->input_switches = NULL;
+    if (sm_app->clock_source)
+    {
+        g_object_unref(sm_app->clock_source);
+    }
+    sm_app->clock_source = NULL;
+    if (sm_app->sync_status)
+    {
+        g_object_unref(sm_app->sync_status);
+    }
+    sm_app->sync_status = NULL;
+    if (sm_app->usb_sync)
+    {
+        g_object_unref(sm_app->usb_sync);
+    }
+    sm_app->usb_sync = NULL;
     if (sm_app->card_info)
     {
         snd_ctl_card_info_free(sm_app->card_info);

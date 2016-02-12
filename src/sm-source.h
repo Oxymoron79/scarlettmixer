@@ -11,7 +11,7 @@ G_BEGIN_DECLS
  * Final type declaration cannot be subclassed.
  */
 #define SM_TYPE_SOURCE sm_source_get_type()
-G_DECLARE_FINAL_TYPE(SmSource, sm_source, SM, SOURCE, GObject)
+G_DECLARE_FINAL_TYPE(SmSource, sm_source, SM, SOURCE, GObject);
 
 /*
  * Method definitions.

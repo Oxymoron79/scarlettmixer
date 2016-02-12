@@ -25,3 +25,5 @@ sm-appresources.c: sm-app.gresource.xml \
                    sm-icon-stereo.svg
 	$(AM_V_GEN) glib-compile-resources $(srcdir)/sm-app.gresource.xml \
 		--target=$@ --sourcedir=$(srcdir) --generate-source
+
+CLEANFILES = $(BUILT_SOURCES)
