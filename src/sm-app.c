@@ -93,15 +93,21 @@ static GActionEntry app_actions[] =
 static void
 sm_app_activate(GApplication *app)
 {
-    SmAppWin *win;
     SmApp *sm_app;
+    GtkWindow *gtkwin;
+    SmAppWin *win;
 
     g_debug("sm_app_activate.");
 
-    g_application_mark_busy(G_APPLICATION(app));
     sm_app = SM_APP(app);
-    win = sm_appwin_new(sm_app, prefix);
-    gtk_window_present(GTK_WINDOW(win));
+    gtkwin = gtk_application_get_active_window(GTK_APPLICATION(app));
+    if (!gtkwin)
+    {
+        g_application_mark_busy(G_APPLICATION(app));
+        win = sm_appwin_new(sm_app, prefix);
+        gtkwin = GTK_WINDOW(win);
+    }
+    gtk_window_present(gtkwin);
 }
 
 static void
