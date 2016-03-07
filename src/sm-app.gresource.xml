@@ -5,6 +5,7 @@
     <file preprocess="xml-stripblanks">sm-appwin.ui</file>
     <file preprocess="xml-stripblanks">sm-strip.ui</file>
     <file preprocess="xml-stripblanks">sm-mix-strip.ui</file>
+    <file preprocess="xml-stripblanks">sm-prefsdialog.ui</file>
     <file>sm-appwin.css</file>
     <file>sm-strip.css</file>
     <file>sm-icon-stereo.svg</file>

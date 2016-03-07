@@ -19,8 +19,14 @@
 #include <gtk/gtk.h>
 #include <alsa/asoundlib.h>
 #include <json-glib/json-glib.h>
+#define G_SETTINGS_ENABLE_BACKEND
+#include <gio/gsettingsbackend.h>
 
 #include "sm-app.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "sm-prefs.h"
 #include "sm-appwin.h"
 #include "sm-channel.h"
 #include "sm-source.h"
@@ -35,6 +41,7 @@ struct _SmApp
 {
     GtkApplication parent;
 
+    GSettings *settings;
     snd_hctl_t *hctl;
     snd_ctl_card_info_t *card_info;
     const char *card_name;
@@ -53,8 +60,27 @@ static const gchar *prefix_scarlett = "Scarlett";
 static const gchar *prefix_intel = "HDA Intel";
 static const gchar *prefix = "Scarlett";
 
+
 static void
-sm_app_on_about(GSimpleAction *action,
+sm_app_preferences_activated(GSimpleAction *action,
+        GVariant *parameter,
+        gpointer app)
+{
+    SmApp *sm_app;
+    GList *windows;
+    SmAppWin *win;
+    SmPrefs *prefs;
+
+    g_debug("sm_app_preferences_activated.");
+    sm_app = SM_APP(app);
+    windows = gtk_application_get_windows(GTK_APPLICATION(app));
+    win = SM_APPWIN(g_list_first(windows)->data);
+    prefs = sm_prefs_new(win);
+    gtk_window_present(GTK_WINDOW(prefs));
+}
+
+static void
+sm_app_about_activated(GSimpleAction *action,
         GVariant *parameter,
         gpointer app)
 {
@@ -78,7 +104,7 @@ sm_app_on_about(GSimpleAction *action,
 }
 
 static void
-sm_app_on_quit(GSimpleAction *action,
+sm_app_quit_activated(GSimpleAction *action,
         GVariant *parameter,
         gpointer app)
 {
@@ -87,8 +113,9 @@ sm_app_on_quit(GSimpleAction *action,
 
 static GActionEntry app_actions[] =
 {
-    { "about", sm_app_on_about, NULL, NULL, NULL },
-    { "quit", sm_app_on_quit, NULL, NULL, NULL }
+    { "preferences", sm_app_preferences_activated, NULL, NULL, NULL },
+    { "about", sm_app_about_activated, NULL, NULL, NULL },
+    { "quit", sm_app_quit_activated, NULL, NULL, NULL }
 };
 
 static void
@@ -115,6 +142,8 @@ static void
 sm_app_startup(GApplication *app)
 {
     SmApp *sm_app;
+    gchar *path;
+    GSettingsBackend *gs_backend;
     GtkBuilder *builder;
     GMenuModel *app_menu;
     const gchar *quit_accels[2] = { "<Ctrl>Q", NULL };
@@ -129,8 +158,13 @@ sm_app_startup(GApplication *app)
             G_N_ELEMENTS(app_actions),
             app);
     gtk_application_set_accels_for_action(GTK_APPLICATION(app),
-          "app.quit",
-          quit_accels);
+            "app.quit",
+            quit_accels);
+
+    //Setup keyfile backend for GSettings in XDG_CONFIG_HOME
+    path = g_build_filename(g_get_user_config_dir(), PACKAGE, "config", NULL);
+    gs_backend = g_keyfile_settings_backend_new(path, "/org/alsa/scarlettmixer/", "Preferences");
+    sm_app->settings = g_settings_new_with_backend("org.alsa.scarlettmixer", gs_backend);
 
     builder = gtk_builder_new_from_resource("/org/alsa/scarlettmixer/sm-appmenu.ui");
     app_menu = G_MENU_MODEL(gtk_builder_get_object(builder, "app_menu"));
@@ -606,33 +640,45 @@ sm_app_new()
                         NULL);
 }
 
+GSettings*
+sm_app_get_settings(SmApp *app)
+{
+    //TODO: Should the object reference be incremented?
+    return app->settings;
+}
+
 GList*
 sm_app_get_channels(SmApp *app)
 {
+    //TODO: Should the object reference be incremented?
     return app->channels;
 }
 
 GList*
 sm_app_get_input_sources(SmApp *app)
 {
+    //TODO: Should the object reference be incremented?
     return app->input_sources;
 }
 
 GList*
 sm_app_get_input_switches(SmApp *app)
 {
+    //TODO: Should the object reference be incremented?
     return app->input_switches;
 }
 
 SmSwitch*
 sm_app_get_clock_source(SmApp *app)
 {
+    //TODO: Should the object reference be incremented?
     return app->clock_source;
 }
 
 SmSwitch*
 sm_app_get_sync_status(SmApp *app)
 {
+    //TODO: Should the object reference be incremented?
     return app->sync_status;
 }
 
@@ -798,4 +844,37 @@ sm_app_read_config_file(SmApp *app, const char *filename)
     }
     g_object_unref(jp);
     return TRUE;
+}
+
+gchar*
+sm_app_read_card_name_from_config_file(const gchar *filename)
+{
+    JsonParser *jp;
+    JsonNode *jn;
+    JsonObject *jo;
+    GError *e = NULL;
+    gchar *card_name;
+
+    jp = json_parser_new();
+    if(!json_parser_load_from_file(jp, filename, &e))
+    {
+        g_object_unref(jp);
+        return g_strdup_printf("Could not read file %s.", filename);
+    }
+    g_debug("Successfully read %s.", filename);
+    jn = json_parser_get_root(jp);
+    if (!JSON_NODE_HOLDS_OBJECT(jn))
+    {
+        g_object_unref(jp);
+        return g_strdup("Invalid file format.");
+    }
+    jo = json_node_get_object(jn);
+    if (!json_object_has_member(jo, "card_name"))
+    {
+        g_object_unref(jp);
+        return g_strdup("Invalid file format: No card_name member found!");
+    }
+    card_name = g_strdup(json_object_get_string_member(jo, "card_name"));
+    g_object_unref(jp);
+    return card_name;
 }

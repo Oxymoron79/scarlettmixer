@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.alsa.scarlettmixer" path="/org/alsa/scarlettmixer/Configuration/">
+    <key name="configfile" type="s">
+      <default>''</default>
+      <summary>Configuration file</summary>
+      <description>The configuration file to load on startup.</description>
+    </key>
+  </schema>
+</schemalist>

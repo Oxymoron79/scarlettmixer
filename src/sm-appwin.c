@@ -30,14 +30,14 @@
 #define SM_APPWIN_BOX_MARGIN (6)
 #define SM_APPWIN_BOX_PADDING (3)
 
-struct _SmAppWinClass
-{
-    GtkApplicationWindowClass parent_class;
-};
-
 struct _SmAppWin
 {
     GtkApplicationWindow parent;
+};
+
+struct _SmAppWinClass
+{
+    GtkApplicationWindowClass parent_class;
 };
 
 typedef struct _SmAppWinPrivate SmAppWinPrivate;
@@ -89,7 +89,26 @@ sm_appwin_check_for_interface(gpointer win)
     card_number = sm_app_find_card(priv->prefix);
     if (card_number >= 0)
     {
+        GSettings *settings;
+        gchar *configfile;
         card_name = sm_app_open_mixer(priv->app, card_number);
+        //Load configuration from file set in settings
+        settings = sm_app_get_settings(priv->app);
+        configfile = g_settings_get_string(settings, "configfile");
+        if (g_file_test(configfile, G_FILE_TEST_EXISTS))
+        {
+            g_debug("Load configuration for from %s.", configfile);
+            if(!sm_app_read_config_file(priv->app, configfile))
+            {
+                //TODO: Show warning dialog
+                g_warning("Failed to read configuration from %s.", configfile);
+            }
+            else
+            {
+                gtk_label_set_text(priv->config_filename_label, configfile);
+            }
+        }
+        g_free(configfile);
         sm_appwin_init_channels(win, card_name);
     }
     else {
@@ -160,6 +179,7 @@ open_config_button_clicked_cb(GtkButton *button, gpointer data)
         }
         else
         {
+            //TODO: Show warning dialog
             g_warning("Failed to load configuration from %s!", filename);
         }
         g_free(filename);
@@ -216,10 +236,12 @@ save_config_button_clicked_cb(GtkButton *button, gpointer data)
 static void
 sm_appwin_dispose(GObject *object)
 {
+    SmAppWin *win;
     SmAppWinPrivate *priv;
     GList *li;
 
-    priv = sm_appwin_get_instance_private(SM_APPWIN(object));
+    win = SM_APPWIN(object);
+    priv = sm_appwin_get_instance_private(win);
     g_debug("sm_appwin_dispose.");
     if (priv->mix_pages)
     {
@@ -649,4 +671,13 @@ sm_appwin_new(SmApp *app, const gchar* prefix)
     priv->file_filter = g_object_ref_sink(file_filter);
     g_timeout_add(SM_APPWIN_INIT_TIMEOUT, sm_appwin_check_for_interface, (gpointer)win);
     return win;
+}
+
+GtkFileFilter*
+sm_appwin_get_file_filter(SmAppWin *win)
+{
+    SmAppWinPrivate *priv;
+
+    priv = sm_appwin_get_instance_private(win);
+    return g_object_ref(priv->file_filter);
 }

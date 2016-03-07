@@ -76,8 +76,8 @@
 <flagvalue id="cflags-gprof" value="false"/>
 <flagvalue id="cflags-gcov" value="false"/>
 </flag>
-<option id="user" value="CFLAGS=&quot;-g -O0&quot; CXXFLAGS=&quot;-g -O0&quot;"/>
-<option id="autogen" value="autogen.sh"/>
-<option id="autogenOpts" value=""/>
+<option id="user" value="--enable-debug"/>
+<option id="autogen" value="autoreconf"/>
+<option id="autogenOpts" value="-i"/>
 </configuration>
 </configurations>
