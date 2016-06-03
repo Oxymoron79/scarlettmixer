@@ -1,7 +1,7 @@
 bin_PROGRAMS=scarlettmixer
 
 scarlettmixer_CFLAGS=@ALSA_CFLAGS@ @GTK_CFLAGS@
-scarlettmixer_LDADD=@ALSA_LIBS@ @GTK_LIBS@ -lm
+scarlettmixer_LDADD=@ALSA_LIBS@ @GTK_LIBS@ @LIBM@
 scarlettmixer_SOURCES=				\
 	scarlettmixer.c					\
 	sm-channel.c sm-channel.h		\
