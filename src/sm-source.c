@@ -211,3 +211,31 @@ sm_source_set_selected_item_index(SmSource *self, unsigned int idx)
     }
     return TRUE;
 }
+
+JsonNode*
+sm_source_to_json_node(SmSource *self)
+{
+    JsonBuilder *jb;
+    JsonNode *jn;
+    int source_index;
+
+    jb = json_builder_new();
+    jb = json_builder_begin_object(jb);
+
+    jb = json_builder_set_member_name(jb, "name");
+    jb = json_builder_add_string_value(jb, self->name);
+
+    jb = json_builder_set_member_name(jb, "source_index");
+    source_index = sm_source_get_selected_item_index(self);
+    jb = json_builder_add_int_value(jb, source_index);
+
+    jb = json_builder_end_object(jb);
+    jn = json_builder_get_root(jb);
+    return jn;
+}
+
+gboolean
+sm_source_load_from_json_node(SmSource *self, JsonNode *node)
+{
+    return TRUE;
+}

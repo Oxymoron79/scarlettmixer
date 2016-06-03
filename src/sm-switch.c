@@ -292,3 +292,32 @@ sm_switch_get_selected_item_name(SmSwitch *self)
     }
     return NULL;
 }
+
+
+JsonNode*
+sm_switch_to_json_node(SmSwitch *self)
+{
+    JsonBuilder *jb;
+    JsonNode *jn;
+    int switch_index;
+
+    jb = json_builder_new();
+    jb = json_builder_begin_object(jb);
+
+    jb = json_builder_set_member_name(jb, "name");
+    jb = json_builder_add_string_value(jb, self->name);
+
+    jb = json_builder_set_member_name(jb, "switch_index");
+    switch_index = sm_switch_get_selected_item_index(self);
+    jb = json_builder_add_int_value(jb, switch_index);
+
+    jb = json_builder_end_object(jb);
+    jn = json_builder_get_root(jb);
+    return jn;
+}
+
+gboolean
+sm_switch_load_from_json_node(SmSwitch *self, JsonNode *node)
+{
+    return TRUE;
+}

@@ -4,6 +4,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <alsa/asoundlib.h>
+#include <json-glib/json-glib.h>
 
 G_BEGIN_DECLS
 
@@ -46,6 +47,8 @@ gboolean          sm_channel_volume_set_db(SmChannel *self, snd_mixer_selem_chan
 gboolean          sm_channel_volume_get_mute(SmChannel *self, snd_mixer_selem_channel_id_t ch, int *mute);
 gboolean          sm_channel_volume_set_mute(SmChannel *self, snd_mixer_selem_channel_id_t ch, int mute);
 
+JsonNode*         sm_channel_to_json_node(SmChannel *self);
+gboolean          sm_channel_load_from_json_node(SmChannel *self, JsonNode *node);
 G_END_DECLS
 
 #endif /* __SM_CHANNEL_H__ */

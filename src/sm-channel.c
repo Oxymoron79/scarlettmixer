@@ -543,3 +543,83 @@ sm_channel_volume_set_mute(SmChannel *self, snd_mixer_selem_channel_id_t ch, int
     }
     return TRUE;
 }
+
+JsonNode*
+sm_channel_to_json_node(SmChannel *self)
+{
+    JsonBuilder *jb;
+    JsonNode *jn;
+    gdouble vol_db;
+    int mute;
+    int source_index;
+
+    jb = json_builder_new();
+    jb = json_builder_begin_object(jb);
+
+    jb = json_builder_set_member_name(jb, "channel_type");
+    jb = json_builder_add_int_value(jb, self->channel_type);
+
+    jb = json_builder_set_member_name(jb, "name");
+    jb = json_builder_add_string_value(jb, self->name);
+
+    jb = json_builder_set_member_name(jb, "display_name");
+    jb = json_builder_add_string_value(jb, self->display_name);
+
+    switch(self->channel_type)
+    {
+        case SM_CHANNEL_MASTER:
+            jb = json_builder_set_member_name(jb, "vol_db");
+            sm_channel_volume_get_db(self, SND_MIXER_SCHN_MONO, &vol_db);
+            jb = json_builder_add_double_value(jb, vol_db);
+
+            jb = json_builder_set_member_name(jb, "mute");
+            sm_channel_volume_get_mute(self, SND_MIXER_SCHN_MONO, &mute);
+            jb = json_builder_add_boolean_value(jb, mute == 0);
+            break;
+        case SM_CHANNEL_OUTPUT:
+            jb = json_builder_set_member_name(jb, "vol_db");
+            jb = json_builder_begin_array(jb);
+            sm_channel_volume_get_db(self, SND_MIXER_SCHN_FRONT_LEFT, &vol_db);
+            jb = json_builder_add_double_value(jb, vol_db);
+            sm_channel_volume_get_db(self, SND_MIXER_SCHN_FRONT_RIGHT, &vol_db);
+            jb = json_builder_add_double_value(jb, vol_db);
+            jb = json_builder_end_array(jb);
+
+            jb = json_builder_set_member_name(jb, "mute");
+            jb = json_builder_begin_array(jb);
+            sm_channel_volume_get_mute(self, SND_MIXER_SCHN_FRONT_LEFT, &mute);
+            jb = json_builder_add_boolean_value(jb, mute == 0);
+            sm_channel_volume_get_mute(self, SND_MIXER_SCHN_FRONT_RIGHT, &mute);
+            jb = json_builder_add_boolean_value(jb, mute == 0);
+            jb = json_builder_end_array(jb);
+
+            jb = json_builder_set_member_name(jb, "source_index");
+            jb = json_builder_begin_array(jb);
+            source_index = sm_channel_source_get_selected_item_index(self, SND_MIXER_SCHN_FRONT_LEFT);
+            jb = json_builder_add_int_value(jb, source_index);
+            source_index = sm_channel_source_get_selected_item_index(self, SND_MIXER_SCHN_FRONT_RIGHT);
+            jb = json_builder_add_int_value(jb, source_index);
+            jb = json_builder_end_array(jb);
+            break;
+        case SM_CHANNEL_MIX:
+            jb = json_builder_set_member_name(jb, "vol_db");
+            sm_channel_volume_get_db(self, SND_MIXER_SCHN_MONO, &vol_db);
+            jb = json_builder_add_double_value(jb, vol_db);
+
+            jb = json_builder_set_member_name(jb, "source_index");
+            source_index = sm_channel_source_get_selected_item_index(self, SND_MIXER_SCHN_MONO);
+            jb = json_builder_add_int_value(jb, source_index);
+            break;
+        default:
+            break;
+    }
+    jb = json_builder_end_object(jb);
+    jn = json_builder_get_root(jb);
+    return jn;
+}
+
+gboolean
+sm_channel_load_from_json_node(SmChannel *self, JsonNode *node)
+{
+    return FALSE;
+}

@@ -4,6 +4,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <alsa/asoundlib.h>
+#include <json-glib/json-glib.h>
 
 G_BEGIN_DECLS
 
@@ -26,6 +27,8 @@ GList*       sm_source_get_item_names(SmSource *self);
 int          sm_source_get_selected_item_index(SmSource *self);
 gboolean     sm_source_set_selected_item_index(SmSource *self, unsigned int idx);
 
+JsonNode*    sm_source_to_json_node(SmSource *self);
+gboolean     sm_source_load_from_json_node(SmSource *self, JsonNode *node);
 G_END_DECLS
 
 #endif /* __SM_SOURCE_H__ */

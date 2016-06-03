@@ -4,6 +4,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <alsa/asoundlib.h>
+#include <json-glib/json-glib.h>
 
 G_BEGIN_DECLS
 
@@ -38,6 +39,8 @@ int              sm_switch_get_selected_item_index(SmSwitch *self);
 gboolean         sm_switch_set_selected_item_index(SmSwitch *self, unsigned int idx);
 gchar*           sm_switch_get_selected_item_name(SmSwitch *self);
 
+JsonNode*        sm_switch_to_json_node(SmSwitch *self);
+gboolean         sm_switch_load_from_json_node(SmSwitch *self, JsonNode *node);
 G_END_DECLS
 
 #endif /* __SM_SWITCH_H__ */

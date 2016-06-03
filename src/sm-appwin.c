@@ -86,13 +86,12 @@ sm_appwin_check_for_interface(gpointer win)
     {
         card_name = sm_app_open_mixer(priv->app, card_number);
         sm_appwin_init_channels(win, card_name);
-        g_application_unmark_busy(G_APPLICATION(priv->app));
     }
     else {
         g_debug("No interface with prefix %s found.", priv->prefix);
         gtk_stack_set_visible_child_name(priv->main_stack, "error");
-        g_application_unmark_busy(G_APPLICATION(priv->app));
     }
+    g_application_unmark_busy(G_APPLICATION(priv->app));
     return FALSE;
 }
 
@@ -118,6 +117,44 @@ reveal_input_config_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpoin
 
     active = gtk_toggle_button_get_active(togglebutton);
     gtk_revealer_set_reveal_child(revealer, active);
+}
+
+static void
+save_config_button_clicked_cb(GtkButton *button, gpointer data)
+{
+    SmAppWin *win;
+    SmAppWinPrivate *priv;
+    SmApp *app;
+    GtkWidget *dialog;
+    GtkFileChooser *chooser;
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SAVE;
+    gint res;
+
+    win = SM_APPWIN(data);
+    priv = sm_appwin_get_instance_private(win);
+    app = SM_APP(priv->app);
+    dialog = gtk_file_chooser_dialog_new("Save Configuration",
+            GTK_WINDOW(win), action,
+            "_Cancel", GTK_RESPONSE_CANCEL,
+            "_Save", GTK_RESPONSE_ACCEPT,
+            NULL);
+    chooser = GTK_FILE_CHOOSER (dialog);
+//    if (user_edited_a_new_document)
+//        gtk_file_chooser_set_current_name(chooser, _("Untitled document"));
+//    else
+//        gtk_file_chooser_set_filename(chooser, existing_filename);
+
+    res = gtk_dialog_run(GTK_DIALOG (dialog));
+    if (res == GTK_RESPONSE_ACCEPT)
+    {
+        char *filename;
+
+        filename = gtk_file_chooser_get_filename(chooser);
+        g_debug("Save configuration to %s.", filename);
+        sm_app_write_config_file(app, filename);
+        g_free(filename);
+    }
+    gtk_widget_destroy(dialog);
 }
 
 static void
@@ -180,6 +217,8 @@ sm_appwin_class_init(SmAppWinClass *class)
             reveal_input_config_togglebutton_toggled_cb);
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
             refresh_button_clicked_cb);
+    gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
+            save_config_button_clicked_cb);
 }
 
 static void

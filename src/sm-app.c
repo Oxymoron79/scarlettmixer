@@ -18,6 +18,7 @@
 
 #include <gtk/gtk.h>
 #include <alsa/asoundlib.h>
+#include <json-glib/json-glib.h>
 
 #include "sm-app.h"
 #include "sm-appwin.h"
@@ -659,4 +660,66 @@ SmSwitch*
 sm_app_get_sync_status(SmApp *app)
 {
     return app->sync_status;
+}
+
+gboolean
+sm_app_write_config_file(SmApp *app, const char *filename)
+{
+    JsonBuilder *jb;
+    JsonNode *jn;
+    JsonGenerator *jg;
+    GError *e = NULL;
+    GList *item;
+
+    jb = json_builder_new();
+    jb = json_builder_begin_object(jb);
+
+    jb = json_builder_set_member_name(jb, "card_name");
+    jb = json_builder_add_string_value(jb, app->card_name);
+
+    jb = json_builder_set_member_name(jb, "input_sources");
+    jb = json_builder_begin_array(jb);
+    for (item = g_list_first(app->input_sources);
+            item;
+            item = g_list_next(item))
+    {
+        jn = sm_source_to_json_node(SM_SOURCE(item->data));
+        jb = json_builder_add_value(jb, jn);
+    }
+    jb = json_builder_end_array(jb);
+
+
+    jb = json_builder_set_member_name(jb, "input_switches");
+    jb = json_builder_begin_array(jb);
+    for (item = g_list_first(app->input_switches);
+            item;
+            item = g_list_next(item))
+    {
+        jn = sm_switch_to_json_node(SM_SWITCH(item->data));
+        jb = json_builder_add_value(jb, jn);
+    }
+    jb = json_builder_end_array(jb);
+
+    jb = json_builder_set_member_name(jb, "channels");
+    jb = json_builder_begin_array(jb);
+    for (item = g_list_first(app->channels);
+            item;
+            item = g_list_next(item))
+    {
+        jn = sm_channel_to_json_node(SM_CHANNEL(item->data));
+        jb = json_builder_add_value(jb, jn);
+    }
+    jb = json_builder_end_array(jb);
+
+    jb = json_builder_end_object(jb);
+    jn = json_builder_get_root(jb);
+    jg = json_generator_new();
+    json_generator_set_root(jg, jn);
+    json_generator_set_pretty(jg, TRUE);
+    if(!json_generator_to_file(jg, filename, &e))
+    {
+        g_print("Failed to write %s\n", filename);
+        return FALSE;
+    }
+    return TRUE;
 }
