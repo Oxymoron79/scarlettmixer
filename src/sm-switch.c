@@ -319,5 +319,29 @@ sm_switch_to_json_node(SmSwitch *self)
 gboolean
 sm_switch_load_from_json_node(SmSwitch *self, JsonNode *node)
 {
+    JsonObject *jo;
+    const gchar *name;
+    gint64 switch_index;
+
+    jo = json_node_get_object(node);
+    if (!json_object_has_member(jo, "name"))
+    {
+        g_warning("Invalid file format: No name member found in input_switch!");
+        return FALSE;
+    }
+    if (!json_object_has_member(jo, "switch_index"))
+    {
+        g_warning("Invalid file format: No switch_index member found in input_switch!");
+        return FALSE;
+    }
+
+    name = json_object_get_string_member(jo, "name");
+    if (g_strcmp0(name, self->name) != 0)
+    {
+        return FALSE;
+    }
+    switch_index = json_object_get_int_member(jo, "switch_index");
+    g_debug("sm_switch %s: read switch index: %d", self->name, switch_index);
+    sm_switch_set_selected_item_index(self, (unsigned int)switch_index);
     return TRUE;
 }

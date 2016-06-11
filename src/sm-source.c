@@ -237,5 +237,29 @@ sm_source_to_json_node(SmSource *self)
 gboolean
 sm_source_load_from_json_node(SmSource *self, JsonNode *node)
 {
+    JsonObject *jo;
+    const gchar *name;
+    gint64 source_index;
+
+    jo = json_node_get_object(node);
+    if (!json_object_has_member(jo, "name"))
+    {
+        g_warning("Invalid file format: No name member found in input_source!");
+        return FALSE;
+    }
+    if (!json_object_has_member(jo, "source_index"))
+    {
+        g_warning("Invalid file format: No source_index member found in input_source!");
+        return FALSE;
+    }
+
+    name = json_object_get_string_member(jo, "name");
+    if (g_strcmp0(name, self->name) != 0)
+    {
+        return FALSE;
+    }
+    source_index = json_object_get_int_member(jo, "source_index");
+    g_debug("sm_source %s: read source index: %d", self->name, source_index);
+    sm_source_set_selected_item_index(self, (unsigned int)source_index);
     return TRUE;
 }

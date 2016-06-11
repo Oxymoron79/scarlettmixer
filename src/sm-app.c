@@ -723,3 +723,105 @@ sm_app_write_config_file(SmApp *app, const char *filename)
     }
     return TRUE;
 }
+
+gboolean
+sm_app_read_config_file(SmApp *app, const char *filename)
+{
+    JsonParser *jp;
+    JsonNode *jn;
+    JsonObject *jo;
+    JsonArray *ja;
+    GError *e = NULL;
+    guint al, i;
+    GList *gl;
+    const gchar *card_name;
+    SmSource *src;
+    SmSwitch *sw;
+    SmChannel *ch;
+
+    jp = json_parser_new();
+    if(!json_parser_load_from_file(jp, filename, &e))
+    {
+        g_warning("Could not read file %s.", filename);
+        return FALSE;
+    }
+    g_debug("Successfully read %s.", filename);
+    jn = json_parser_get_root(jp);
+    if (!JSON_NODE_HOLDS_OBJECT(jn))
+    {
+        g_warning("Invalid file format.");
+        return FALSE;
+    }
+    jo = json_node_get_object(jn);
+    if (!json_object_has_member(jo, "card_name"))
+    {
+        g_warning("Invalid file format: No card_name member found!");
+        return FALSE;
+    }
+    if (!json_object_has_member(jo, "input_sources"))
+    {
+        g_warning("Invalid file format: No input_sources member found!");
+        return FALSE;
+    }
+    if (!json_object_has_member(jo, "input_switches"))
+    {
+        g_warning("Invalid file format: No input_switches member found!");
+        return FALSE;
+    }
+    if (!json_object_has_member(jo, "channels"))
+    {
+        g_warning("Invalid file format: No channels member found!");
+        return FALSE;
+    }
+
+    card_name = json_object_get_string_member(jo, "card_name");
+    if (g_strcmp0(card_name, app->card_name) != 0)
+    {
+        g_warning("Configuration not applicable for card %s.", app->card_name);
+        return FALSE;
+    }
+
+    ja = json_object_get_array_member(jo, "input_sources");
+    al = json_array_get_length(ja);
+    for (i=0; i < al; i++)
+    {
+        for (gl = g_list_first(app->input_sources); gl; gl = g_list_next(gl))
+        {
+            src = SM_SOURCE(gl->data);
+            if (sm_source_load_from_json_node(src, json_array_get_element(ja, i)))
+            {
+                break;
+            }
+        }
+    }
+
+    ja = json_object_get_array_member(jo, "input_switches");
+    al = json_array_get_length(ja);
+    for (i=0; i < al; i++)
+    {
+        for (gl = g_list_first(app->input_switches); gl; gl = g_list_next(gl))
+        {
+            sw = SM_SWITCH(gl->data);
+            if (sm_switch_load_from_json_node(sw, json_array_get_element(ja, i)))
+            {
+                break;
+            }
+        }
+    }
+
+    ja = json_object_get_array_member(jo, "channels");
+    al = json_array_get_length(ja);
+    for (i=0; i < al; i++)
+    {
+        for (gl = g_list_first(app->channels); gl; gl = g_list_next(gl))
+        {
+            ch = SM_CHANNEL(gl->data);
+            if (sm_channel_load_from_json_node(ch, json_array_get_element(ja, i)))
+            {
+                break;
+            }
+        }
+    }
+    g_object_unref(jp);
+    return TRUE;
+}

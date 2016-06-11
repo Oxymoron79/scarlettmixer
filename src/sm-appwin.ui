@@ -432,6 +432,16 @@ Please make sure the interface is connected and is powered on.</property>
         <property name="can_focus">False</property>
         <property name="show_close_button">True</property>
         <child>
+          <object class="GtkButton" id="open_config_button">
+            <property name="label">gtk-open</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Open configuration.</property>
+            <property name="use_stock">True</property>
+            <signal name="clicked" handler="open_config_button_clicked_cb" object="SmAppWin" swapped="no"/>
+          </object>
+        </child>
+        <child>
           <object class="GtkToggleButton" id="reveal_input_config_togglebutton">
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
@@ -440,21 +450,50 @@ Please make sure the interface is connected and is powered on.</property>
             <property name="always_show_image">True</property>
             <signal name="toggled" handler="reveal_input_config_togglebutton_toggled_cb" object="input_config_revealer" swapped="no"/>
           </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
         </child>
         <child type="title">
-          <object class="GtkLabel" id="card_name_label">
+          <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">No Scarlett interface found!</property>
-            <attributes>
-              <attribute name="weight" value="bold"/>
-            </attributes>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkLabel" id="card_name_label">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">No Scarlett interface found!</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="config_filename_label">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">No configuration file loaded.</property>
+                <style>
+                  <class name="small-text"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
           </object>
         </child>
         <child>
           <object class="GtkButton" id="save_config_button">
             <property name="label">gtk-save</property>
-            <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="tooltip_text" translatable="yes">Save configuration.</property>

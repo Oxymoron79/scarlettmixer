@@ -23,4 +23,5 @@ SmSwitch*    sm_app_get_clock_source(SmApp *app);
 SmSwitch*    sm_app_get_sync_status(SmApp *app);
 
 gboolean     sm_app_write_config_file(SmApp *app, const char *filename);
+gboolean     sm_app_read_config_file(SmApp *app, const char *filename);
 #endif /* __SM_APP_H */

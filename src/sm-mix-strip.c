@@ -158,6 +158,22 @@ sm_mix_strip_set_volume(SmMixStrip *strip, gdouble vol, gdouble balance)
 }
 
 static void
+sm_mix_strip_set_name(SmMixStrip *strip, const gchar *name)
+{
+    SmMixStripPrivate *priv;
+
+    priv = sm_mix_strip_get_instance_private(strip);
+    if (priv->channel[0])
+    {
+        sm_channel_set_display_name(priv->channel[0], name);
+    }
+    if (priv->channel[1])
+    {
+        sm_channel_set_display_name(priv->channel[1], name);
+    }
+}
+
+static void
 volume_scale_value_changed_cb(GtkRange *range, gpointer user_data)
 {
     SmMixStripPrivate *priv;
@@ -188,15 +204,31 @@ balance_scale_value_changed_cb(GtkRange *range, gpointer user_data)
 }
 
 static void
+name_entry_changed_cb(GtkEditable *editable, gpointer user_data)
+{
+    SmMixStrip *strip;
+    GtkEntry *entry;
+    const gchar *name;
+
+    strip = SM_MIX_STRIP(user_data);
+    entry = GTK_ENTRY(editable);
+    name = gtk_entry_get_text(entry);
+    g_debug("name_entry_changed: %s", name);
+
+    sm_mix_strip_set_name(strip, name);
+}
+
+static void
 sm_mix_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
 {
     SmMixStripPrivate *priv;
     gdouble vol_db;
     int mute;
+    const gchar *name;
     int idx;
 
     priv = sm_mix_strip_get_instance_private(user_data);
-    g_debug("sm_mix_strip_channel_changed_cb: %s.", gtk_editable_get_chars(GTK_EDITABLE(priv->name_entry), 0, -1));
+    g_debug("sm_mix_strip_channel_changed_cb: %s.", gtk_entry_get_text(priv->name_entry));
     idx = sm_channel_source_get_selected_item_index(channel, SND_MIXER_SCHN_MONO);
     if (idx < 0) {
         g_warning("Could not get selected item!");
@@ -205,6 +237,11 @@ sm_mix_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
         gtk_combo_box_set_active(GTK_COMBO_BOX(priv->source_comboboxtext), idx);
     }
     sm_mix_strip_set_balance(SM_MIX_STRIP(user_data));
+    name = sm_channel_get_display_name(channel);
+    if (g_strcmp0(gtk_entry_get_text(priv->name_entry), name) != 0)
+    {
+        gtk_entry_set_text(priv->name_entry, name);
+    }
 }
 
 static void
@@ -269,6 +306,9 @@ sm_mix_strip_class_init(SmMixStripClass *class)
             volume_scale_value_changed_cb);
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
             balance_scale_value_changed_cb);
+    gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
+            name_entry_changed_cb);
+
 }
 
 gboolean
@@ -334,9 +374,7 @@ sm_mix_strip_new(SmChannel *channel)
     else
         priv->mix_ids[mix_idx2] = priv->mix_ids[0] - 1;
 
-    idx = 0;
-    gtk_editable_delete_text(GTK_EDITABLE(priv->name_entry), 0, -1);
-    gtk_editable_insert_text(GTK_EDITABLE(priv->name_entry), sm_channel_get_display_name(priv->channel[mix_idx]), -1 ,&idx);
+    gtk_entry_set_text(priv->name_entry, sm_channel_get_display_name(priv->channel[mix_idx]));
 
     list = sm_channel_source_get_item_names(priv->channel[mix_idx], SND_MIXER_SCHN_MONO);
     for(list = g_list_first(list); list; list = g_list_next(list))

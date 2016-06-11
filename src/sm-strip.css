@@ -6,7 +6,7 @@
     padding: 2pt 5pt;
 }
 
-GtkEntry:insensitive {
+GtkEntry:disabled {
     color: @theme_text_color;
 }
 /* Set colors of levelbar */

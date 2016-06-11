@@ -46,8 +46,12 @@ struct _SmAppWinPrivate
 {
     SmApp *app;
     const gchar* prefix;
+    GtkFileFilter *file_filter;
     GtkLabel *card_name_label;
+    GtkLabel *config_filename_label;
+    GtkButton *open_config_button;
     GtkToggleButton *reveal_input_config_togglebutton;
+    GtkButton *save_config_button;
     GtkStack *main_stack;
     GtkNotebook *output_mix_notebook;
     GList *mix_pages;
@@ -120,6 +124,48 @@ reveal_input_config_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpoin
 }
 
 static void
+open_config_button_clicked_cb(GtkButton *button, gpointer data)
+{
+    SmAppWin *win;
+    SmAppWinPrivate *priv;
+    SmApp *app;
+    GtkWidget *dialog;
+    GtkFileChooser *chooser;
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+    gint res;
+
+    win = SM_APPWIN(data);
+    priv = sm_appwin_get_instance_private(win);
+    app = SM_APP(priv->app);
+    dialog = gtk_file_chooser_dialog_new("Open Configuration",
+            GTK_WINDOW(win), action,
+            "_Cancel", GTK_RESPONSE_CANCEL,
+            "_Open", GTK_RESPONSE_ACCEPT,
+            NULL);
+    chooser = GTK_FILE_CHOOSER(dialog);
+    gtk_file_chooser_add_filter(chooser, priv->file_filter);
+
+    res = gtk_dialog_run(GTK_DIALOG (dialog));
+    if (res == GTK_RESPONSE_ACCEPT)
+    {
+        char *filename;
+
+        filename = gtk_file_chooser_get_filename(chooser);
+        g_debug("Read configuration from %s.", filename);
+        if(sm_app_read_config_file(app, filename))
+        {
+            gtk_label_set_text(priv->config_filename_label, filename);
+        }
+        else
+        {
+            g_warning("Failed to load configuration from %s!", filename);
+        }
+        g_free(filename);
+    }
+    gtk_widget_destroy(dialog);
+}
+
+static void
 save_config_button_clicked_cb(GtkButton *button, gpointer data)
 {
     SmAppWin *win;
@@ -128,6 +174,7 @@ save_config_button_clicked_cb(GtkButton *button, gpointer data)
     GtkWidget *dialog;
     GtkFileChooser *chooser;
     GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SAVE;
+    const char *config_filename;
     gint res;
 
     win = SM_APPWIN(data);
@@ -138,20 +185,27 @@ save_config_button_clicked_cb(GtkButton *button, gpointer data)
             "_Cancel", GTK_RESPONSE_CANCEL,
             "_Save", GTK_RESPONSE_ACCEPT,
             NULL);
-    chooser = GTK_FILE_CHOOSER (dialog);
-//    if (user_edited_a_new_document)
-//        gtk_file_chooser_set_current_name(chooser, _("Untitled document"));
-//    else
-//        gtk_file_chooser_set_filename(chooser, existing_filename);
+    chooser = GTK_FILE_CHOOSER(dialog);
+    gtk_file_chooser_add_filter(chooser, priv->file_filter);
+
+    config_filename = gtk_label_get_text(priv->config_filename_label);
+    if (g_file_test(config_filename, G_FILE_TEST_EXISTS))
+    {
+        gtk_file_chooser_set_filename(chooser, config_filename);
+    }
+    else
+    {
+        gtk_file_chooser_set_current_name(chooser, "MixerConfig.json");
+    }
 
     res = gtk_dialog_run(GTK_DIALOG (dialog));
     if (res == GTK_RESPONSE_ACCEPT)
     {
         char *filename;
-
         filename = gtk_file_chooser_get_filename(chooser);
         g_debug("Save configuration to %s.", filename);
         sm_app_write_config_file(app, filename);
+        gtk_label_set_text(priv->config_filename_label, filename);
         g_free(filename);
     }
     gtk_widget_destroy(dialog);
@@ -169,6 +223,11 @@ sm_appwin_dispose(GObject *object)
     {
         g_list_free(priv->mix_pages);
         priv->mix_pages = NULL;
+    }
+    if (priv->file_filter)
+    {
+        g_object_unref(priv->file_filter);
+        priv->file_filter = NULL;
     }
     G_OBJECT_CLASS(sm_appwin_parent_class)->dispose(object);
 }
@@ -197,7 +256,13 @@ sm_appwin_class_init(SmAppWinClass *class)
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             SmAppWin, card_name_label);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
+            SmAppWin, config_filename_label);
+    gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
+            SmAppWin, open_config_button);
+    gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             SmAppWin, reveal_input_config_togglebutton);
+    gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
+            SmAppWin, save_config_button);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             SmAppWin, main_stack);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
@@ -213,6 +278,8 @@ sm_appwin_class_init(SmAppWinClass *class)
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             SmAppWin, sync_status_entry);
 
+    gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
+            open_config_button_clicked_cb);
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
             reveal_input_config_togglebutton_toggled_cb);
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
@@ -417,7 +484,9 @@ sm_appwin_init_input_sources(gpointer data)
     }
     else
     {
+        gtk_widget_show(GTK_WIDGET(arg->priv->open_config_button));
         gtk_widget_show(GTK_WIDGET(arg->priv->reveal_input_config_togglebutton));
+        gtk_widget_show(GTK_WIDGET(arg->priv->save_config_button));
         gtk_widget_show_all(GTK_WIDGET(arg->priv->input_sources_box));
         g_free(arg);
         return FALSE;
@@ -555,12 +624,17 @@ sm_appwin_new(SmApp *app, const gchar* prefix)
 {
     SmAppWin *win;
     SmAppWinPrivate *priv;
+    GtkFileFilter *file_filter;
 
     g_debug("sm_appwin_new.");
     win = g_object_new(SM_APPWIN_TYPE, "application", app, NULL);
     priv = sm_appwin_get_instance_private(win);
     priv->app = app;
     priv->prefix = prefix;
+    file_filter = gtk_file_filter_new();
+    gtk_file_filter_add_mime_type(file_filter, "application/json");
+    gtk_file_filter_set_name(file_filter, "All JSON Files");
+    priv->file_filter = g_object_ref_sink(file_filter);
     g_timeout_add(SM_APPWIN_INIT_TIMEOUT, sm_appwin_check_for_interface, (gpointer)win);
     return win;
 }

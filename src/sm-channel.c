@@ -136,6 +136,13 @@ sm_channel_get_display_name(SmChannel *self)
     return self->display_name;
 }
 
+void
+sm_channel_set_display_name(SmChannel *self, const gchar *name)
+{
+    g_free(self->display_name);
+    self->display_name = g_strdup(name);
+}
+
 unsigned int
 sm_channel_get_id(SmChannel *self)
 {
@@ -621,5 +628,85 @@ sm_channel_to_json_node(SmChannel *self)
 gboolean
 sm_channel_load_from_json_node(SmChannel *self, JsonNode *node)
 {
-    return FALSE;
+    JsonObject *jo;
+    JsonArray *ja;
+    const gchar *name;
+    gint64 source_index;
+    gint64 type;
+    gdouble vol_db;
+    gboolean mute;
+
+    jo = json_node_get_object(node);
+    if (!json_object_has_member(jo, "name"))
+    {
+        g_warning("Invalid file format: No name member found in channel!");
+        return FALSE;
+    }
+    if (!json_object_has_member(jo, "channel_type"))
+    {
+        g_warning("Invalid file format: No channel_type member found in channel!");
+        return FALSE;
+    }
+
+    name = json_object_get_string_member(jo, "name");
+    if (g_strcmp0(name, self->name) != 0)
+    {
+        return FALSE;
+    }
+    type = json_object_get_int_member(jo, "channel_type");
+    if (type != self->channel_type)
+    {
+        return FALSE;
+    }
+    g_debug("sm_channel %s: read channel type: %d", self->name, type);
+    switch(self->channel_type)
+    {
+        case SM_CHANNEL_MASTER:
+            vol_db = json_object_get_double_member(jo, "vol_db");
+            sm_channel_volume_set_db(self, SND_MIXER_SCHN_MONO, vol_db);
+            mute = json_object_get_boolean_member(jo, "mute");
+            sm_channel_volume_set_mute(self, SND_MIXER_SCHN_MONO, mute == 0);
+            break;
+        case SM_CHANNEL_OUTPUT:
+            ja = json_object_get_array_member(jo, "vol_db");
+            if (json_array_get_length(ja) >= 2)
+            {
+                vol_db = json_array_get_double_element(ja, 0);
+                sm_channel_volume_set_db(self, SND_MIXER_SCHN_FRONT_LEFT, vol_db);
+                vol_db = json_array_get_double_element(ja, 1);
+                sm_channel_volume_set_db(self, SND_MIXER_SCHN_FRONT_RIGHT, vol_db);
+            }
+            ja = json_object_get_array_member(jo, "mute");
+            if (json_array_get_length(ja) >= 2)
+            {
+                mute = json_array_get_boolean_element(ja, 0);
+                sm_channel_volume_set_mute(self, SND_MIXER_SCHN_FRONT_LEFT, mute == 0);
+                mute = json_array_get_boolean_element(ja, 1);
+                sm_channel_volume_set_mute(self, SND_MIXER_SCHN_FRONT_RIGHT, mute == 0);
+            }
+            ja = json_object_get_array_member(jo, "source_index");
+            if (json_array_get_length(ja) >= 2)
+            {
+                source_index = json_array_get_int_element(ja, 0);
+                sm_channel_source_set_selected_item_index(self, SND_MIXER_SCHN_FRONT_LEFT, source_index);
+                source_index = json_array_get_int_element(ja, 1);
+                sm_channel_source_set_selected_item_index(self, SND_MIXER_SCHN_FRONT_RIGHT, source_index);
+            }
+            break;
+        case SM_CHANNEL_MIX:
+            vol_db = json_object_get_double_member(jo, "vol_db");
+            sm_channel_volume_set_db(self, SND_MIXER_SCHN_MONO, vol_db);
+            source_index = json_object_get_double_member(jo, "source_index");
+            sm_channel_source_set_selected_item_index(self, SND_MIXER_SCHN_MONO, source_index);
+            name = json_object_get_string_member(jo, "display_name");
+            if (g_strcmp0(self->display_name, name) != 0)
+            {
+                sm_channel_set_display_name(self, name);
+            }
+            break;
+        default:
+            break;
+    }
+    g_signal_emit(self, sm_channel_signals[SM_CHANNEL_SIGNAL_CHANGED], 0);
+    return TRUE;
 }
