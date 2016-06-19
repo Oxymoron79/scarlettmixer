@@ -55,6 +55,7 @@ struct _SmAppWinPrivate
     GtkStack *main_stack;
     GtkNotebook *output_mix_notebook;
     GList *mix_pages;
+    GtkBox *output_channel_main_box;
     GtkBox *output_channel_box;
     GtkBox *input_sources_box;
     GtkBox *input_switches_box;
@@ -268,6 +269,8 @@ sm_appwin_class_init(SmAppWinClass *class)
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             SmAppWin, output_mix_notebook);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
+            SmAppWin, output_channel_main_box);
+    gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             SmAppWin, output_channel_box);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             SmAppWin, input_sources_box);
@@ -349,6 +352,8 @@ sm_appwin_init_strips(gpointer data)
     SmStrip *strip;
     SmMixStrip *mixstrip;
     GList *page, *item;
+    GtkScrolledWindow *scrolled_win;
+    GtkViewport *viewport;
     GtkBox *box;
     GtkLabel *label;
     gint idx;
@@ -362,7 +367,7 @@ sm_appwin_init_strips(gpointer data)
         case SM_CHANNEL_MASTER:
         {
             strip = sm_strip_new(ch);
-            gtk_box_pack_end(arg->priv->output_channel_box, GTK_WIDGET(strip), FALSE, FALSE, 0);
+            gtk_box_pack_end(arg->priv->output_channel_main_box, GTK_WIDGET(strip), FALSE, FALSE, 0);
             break;
         }
         case SM_CHANNEL_OUTPUT:
@@ -411,9 +416,15 @@ sm_appwin_init_strips(gpointer data)
                 gtk_widget_set_margin_top(GTK_WIDGET(box), SM_APPWIN_BOX_MARGIN);
                 gtk_widget_set_margin_bottom(GTK_WIDGET(box), SM_APPWIN_BOX_MARGIN);
                 gtk_widget_set_name(GTK_WIDGET(box), mix_ids);
+                viewport = GTK_VIEWPORT(gtk_viewport_new(NULL, NULL));
+                gtk_container_add(GTK_CONTAINER(viewport), GTK_WIDGET(box));
+                scrolled_win = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new(NULL, NULL));
+                gtk_scrolled_window_set_policy(scrolled_win, GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
+                gtk_container_add(GTK_CONTAINER(scrolled_win), GTK_WIDGET(viewport));
+                gtk_widget_show_all(GTK_WIDGET(scrolled_win));
                 arg->priv->mix_pages = g_list_prepend(arg->priv->mix_pages, box);
                 label = GTK_LABEL(gtk_label_new(g_strdup_printf("Mix %c & %c",mix_ids[0], mix_ids[1])));
-                idx = gtk_notebook_append_page(arg->priv->output_mix_notebook, GTK_WIDGET(box), GTK_WIDGET(label));
+                idx = gtk_notebook_append_page(arg->priv->output_mix_notebook, GTK_WIDGET(scrolled_win), GTK_WIDGET(label));
             }
             if (pack_strip)
             {
