@@ -3,10 +3,6 @@
     border-bottom: 1pt solid darker(@theme_bg_color);
 }
 
-GtkViewport {
-    background-color: @theme_base_color;
-}
-
 .small-text {
     font-size: small;
 }

@@ -21,10 +21,6 @@
           <object class="GtkViewport" id="init_viewport">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_left">5</property>
-            <property name="margin_right">5</property>
-            <property name="margin_top">5</property>
-            <property name="margin_bottom">5</property>
             <child>
               <object class="GtkBox" id="init_box">
                 <property name="visible">True</property>
@@ -49,7 +45,7 @@
                   <object class="GtkLabel" id="init_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="margin_left">5</property>
+                    <property name="margin_left">6</property>
                     <property name="label" translatable="yes">Initializing...</property>
                   </object>
                   <packing>
@@ -70,16 +66,12 @@
           <object class="GtkBox" id="error_box">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_bottom">5</property>
+            <property name="margin_bottom">6</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkViewport" id="error_viewport">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">5</property>
-                <property name="margin_right">5</property>
-                <property name="margin_top">5</property>
-                <property name="margin_bottom">5</property>
                 <child>
                   <object class="GtkBox" id="error_msg_box">
                     <property name="visible">True</property>
@@ -103,8 +95,8 @@
                       <object class="GtkLabel" id="error_label">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="xpad">5</property>
-                        <property name="ypad">5</property>
+                        <property name="margin_left">6</property>
+                        <property name="margin_right">6</property>
                         <property name="label" translatable="yes">&lt;b&gt;No Scarlett interface found!&lt;/b&gt;
 Please make sure the interface is connected and is powered on.</property>
                         <property name="use_markup">True</property>
@@ -125,10 +117,10 @@ Please make sure the interface is connected and is powered on.</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButtonBox" id="buttonbox1">
+              <object class="GtkButtonBox" id="error_buttonbox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="spacing">5</property>
+                <property name="spacing">6</property>
                 <property name="layout_style">center</property>
                 <child>
                   <object class="GtkButton" id="refresh_button">
@@ -186,11 +178,11 @@ Please make sure the interface is connected and is powered on.</property>
               <object class="GtkBox" id="output_box">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">5</property>
-                <property name="margin_right">5</property>
-                <property name="margin_bottom">5</property>
+                <property name="margin_left">6</property>
+                <property name="margin_right">6</property>
+                <property name="margin_bottom">6</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">5</property>
+                <property name="spacing">6</property>
                 <child>
                   <object class="GtkNotebook" id="output_mix_notebook">
                     <property name="visible">True</property>
@@ -222,11 +214,11 @@ Please make sure the interface is connected and is powered on.</property>
                               <object class="GtkBox" id="output_channel_box">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_left">5</property>
-                                <property name="margin_right">5</property>
-                                <property name="margin_top">5</property>
-                                <property name="margin_bottom">5</property>
-                                <property name="spacing">2</property>
+                                <property name="margin_left">6</property>
+                                <property name="margin_right">6</property>
+                                <property name="margin_top">6</property>
+                                <property name="margin_bottom">6</property>
+                                <property name="spacing">3</property>
                                 <child>
                                   <placeholder/>
                                 </child>
@@ -248,12 +240,8 @@ Please make sure the interface is connected and is powered on.</property>
                       <object class="GtkBox" id="sync_box">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_left">5</property>
-                        <property name="margin_right">5</property>
-                        <property name="margin_top">5</property>
-                        <property name="margin_bottom">5</property>
                         <property name="orientation">vertical</property>
-                        <property name="spacing">2</property>
+                        <property name="spacing">3</property>
                         <child>
                           <object class="GtkLabel" id="sync_source_label">
                             <property name="visible">True</property>
@@ -340,7 +328,7 @@ Please make sure the interface is connected and is powered on.</property>
                         <property name="can_focus">False</property>
                         <property name="margin_left">6</property>
                         <property name="margin_right">6</property>
-                        <property name="margin_top">5</property>
+                        <property name="margin_top">6</property>
                         <property name="label_xalign">0</property>
                         <property name="label_yalign">0</property>
                         <property name="shadow_type">none</property>
@@ -354,19 +342,15 @@ Please make sure the interface is connected and is powered on.</property>
                               <object class="GtkViewport" id="input_sources_viewport">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_left">5</property>
-                                <property name="margin_right">5</property>
-                                <property name="margin_top">5</property>
-                                <property name="margin_bottom">5</property>
                                 <child>
                                   <object class="GtkBox" id="input_sources_box">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="margin_left">5</property>
-                                    <property name="margin_right">5</property>
-                                    <property name="margin_top">5</property>
-                                    <property name="margin_bottom">5</property>
-                                    <property name="spacing">2</property>
+                                    <property name="margin_left">6</property>
+                                    <property name="margin_right">6</property>
+                                    <property name="margin_top">6</property>
+                                    <property name="margin_bottom">6</property>
+                                    <property name="spacing">3</property>
                                     <child>
                                       <placeholder/>
                                     </child>
@@ -380,7 +364,6 @@ Please make sure the interface is connected and is powered on.</property>
                           <object class="GtkLabel" id="input_sources_label">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="margin_left">5</property>
                             <property name="label" translatable="yes">Capture Source Configuration</property>
                             <attributes>
                               <attribute name="weight" value="bold"/>
@@ -414,19 +397,15 @@ Please make sure the interface is connected and is powered on.</property>
                               <object class="GtkViewport" id="input_switches_viewport">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_left">5</property>
-                                <property name="margin_right">5</property>
-                                <property name="margin_top">5</property>
-                                <property name="margin_bottom">5</property>
                                 <child>
                                   <object class="GtkBox" id="input_switches_box">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="margin_left">5</property>
-                                    <property name="margin_right">5</property>
-                                    <property name="margin_top">5</property>
-                                    <property name="margin_bottom">5</property>
-                                    <property name="spacing">2</property>
+                                    <property name="margin_left">6</property>
+                                    <property name="margin_right">6</property>
+                                    <property name="margin_top">6</property>
+                                    <property name="margin_bottom">6</property>
+                                    <property name="spacing">3</property>
                                     <child>
                                       <placeholder/>
                                     </child>
@@ -440,7 +419,6 @@ Please make sure the interface is connected and is powered on.</property>
                           <object class="GtkLabel" id="input_switches_label">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="margin_left">5</property>
                             <property name="label" translatable="yes">Input switches</property>
                             <attributes>
                               <attribute name="weight" value="bold"/>
@@ -478,11 +456,15 @@ Please make sure the interface is connected and is powered on.</property>
         <child>
           <object class="GtkButton" id="open_config_button">
             <property name="label">gtk-open</property>
+            <property name="width_request">72</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="tooltip_text" translatable="yes">Open configuration.</property>
             <property name="use_stock">True</property>
             <signal name="clicked" handler="open_config_button_clicked_cb" object="SmAppWin" swapped="no"/>
+            <style>
+              <class name="suggested-action"/>
+            </style>
           </object>
         </child>
         <child>
@@ -537,7 +519,8 @@ Please make sure the interface is connected and is powered on.</property>
         </child>
         <child>
           <object class="GtkButton" id="save_config_button">
-            <property name="label">gtk-save</property>
+            <property name="label">gtk-save-as</property>
+            <property name="width_request">72</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="tooltip_text" translatable="yes">Save configuration.</property>

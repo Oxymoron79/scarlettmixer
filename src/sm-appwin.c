@@ -27,8 +27,8 @@
 #include "sm-switch.h"
 
 #define SM_APPWIN_INIT_TIMEOUT (100)
-#define SM_APPWIN_BOX_MARGIN (5)
-#define SM_APPWIN_BOX_PADDING (2)
+#define SM_APPWIN_BOX_MARGIN (6)
+#define SM_APPWIN_BOX_PADDING (3)
 
 struct _SmAppWinClass
 {
