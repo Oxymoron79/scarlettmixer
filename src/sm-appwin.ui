@@ -338,29 +338,39 @@ Please make sure the interface is connected and is powered on.</property>
                       <object class="GtkFrame" id="input_sources_frame">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="margin_left">6</property>
+                        <property name="margin_right">6</property>
                         <property name="margin_top">5</property>
                         <property name="label_xalign">0</property>
                         <property name="label_yalign">0</property>
                         <property name="shadow_type">none</property>
                         <child>
-                          <object class="GtkViewport" id="input_sources_viewport">
+                          <object class="GtkScrolledWindow" id="input_sources_scrolled_win">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="margin_left">5</property>
-                            <property name="margin_right">5</property>
-                            <property name="margin_top">5</property>
-                            <property name="margin_bottom">5</property>
+                            <property name="can_focus">True</property>
+                            <property name="vscrollbar_policy">never</property>
+                            <property name="shadow_type">in</property>
                             <child>
-                              <object class="GtkBox" id="input_sources_box">
+                              <object class="GtkViewport" id="input_sources_viewport">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="margin_left">5</property>
                                 <property name="margin_right">5</property>
                                 <property name="margin_top">5</property>
                                 <property name="margin_bottom">5</property>
-                                <property name="spacing">2</property>
                                 <child>
-                                  <placeholder/>
+                                  <object class="GtkBox" id="input_sources_box">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="margin_left">5</property>
+                                    <property name="margin_right">5</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="spacing">2</property>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                  </object>
                                 </child>
                               </object>
                             </child>
@@ -388,28 +398,39 @@ Please make sure the interface is connected and is powered on.</property>
                       <object class="GtkFrame" id="input_switches_frame">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="margin_left">6</property>
+                        <property name="margin_right">6</property>
+                        <property name="margin_bottom">6</property>
                         <property name="label_xalign">0</property>
                         <property name="label_yalign">0</property>
                         <property name="shadow_type">none</property>
                         <child>
-                          <object class="GtkViewport" id="input_switches_viewport">
+                          <object class="GtkScrolledWindow" id="input_switches_scrolled_win">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="margin_left">5</property>
-                            <property name="margin_right">5</property>
-                            <property name="margin_top">5</property>
-                            <property name="margin_bottom">5</property>
+                            <property name="can_focus">True</property>
+                            <property name="vscrollbar_policy">never</property>
+                            <property name="shadow_type">in</property>
                             <child>
-                              <object class="GtkBox" id="input_switches_box">
+                              <object class="GtkViewport" id="input_switches_viewport">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="margin_left">5</property>
                                 <property name="margin_right">5</property>
                                 <property name="margin_top">5</property>
                                 <property name="margin_bottom">5</property>
-                                <property name="spacing">2</property>
                                 <child>
-                                  <placeholder/>
+                                  <object class="GtkBox" id="input_switches_box">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="margin_left">5</property>
+                                    <property name="margin_right">5</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <property name="spacing">2</property>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                  </object>
                                 </child>
                               </object>
                             </child>
