@@ -1,23 +1,8 @@
-General Information
-===================
+# Scarlett Mixer
+![Logo](Oxymoron79.github.com/scarlettmixer/scalable/apps/ScarlettMixer.svg)
+ScarlettMixer is a GTK+3 mixer application for the Scarlett USB audio interfaces.
 
-This is scarlettmixer version 0.1.0. scarlettmixer is a GTK+3 mixer application
-for the Scarlett USB audio interfaces.
-
-The official web site is:
-  http://www.github.com/Oxymoron79/scarlettmixer
-
-
-Installation
-============
-
-See the file 'INSTALL'
-
-
-How to report bugs
-==================
-
-Bugs should be reported to the GitHub issues tracking system.
-(http://www.github.com/Oxymoron79/scarlettmixer/issues) You will need
-to create an account for yourself.
-
+# How to report bugs
+Bugs should be reported to the GitHub issues tracking system
+(http://www.github.com/Oxymoron79/scarlettmixer/issues). 
+You will need to create an account for yourself.
