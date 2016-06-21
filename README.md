@@ -1,5 +1,5 @@
 # Scarlett Mixer
-![Logo](Oxymoron79.github.com/scarlettmixer/scalable/apps/ScarlettMixer.svg)
+![Logo](scalable/apps/ScarlettMixer.svg)
 ScarlettMixer is a GTK+3 mixer application for the Scarlett USB audio interfaces.
 
 # How to report bugs
