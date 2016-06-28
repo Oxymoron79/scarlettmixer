@@ -649,13 +649,3 @@ sm_appwin_new(SmApp *app, const gchar* prefix)
     g_timeout_add(SM_APPWIN_INIT_TIMEOUT, sm_appwin_check_for_interface, (gpointer)win);
     return win;
 }
-
-void
-sm_appwin_open(SmAppWin *win,
-        GFile *file)
-{
-    SmAppWinPrivate *priv;
-
-    g_debug("sm_appwin_open.");
-    priv = sm_appwin_get_instance_private(win);
-}

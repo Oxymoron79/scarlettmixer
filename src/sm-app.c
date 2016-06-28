@@ -112,31 +112,6 @@ sm_app_activate(GApplication *app)
 }
 
 static void
-sm_app_open(GApplication *app,
-        GFile **files,
-        gint n_files,
-        const gchar *hint)
-{
-    GList *windows;
-    SmAppWin *win;
-    SmApp *sm_app;
-    int i;
-
-    g_debug("sm_app_open.");
-    sm_app = SM_APP(app);
-    windows = gtk_application_get_windows(GTK_APPLICATION(app));
-    if (windows)
-        win = SM_APPWIN(windows->data);
-    else
-        win = sm_appwin_new(SM_APP(app), prefix);
-
-    for (i = 0; i < n_files; i++)
-        sm_appwin_open(win, files[i]);
-
-    gtk_window_present(GTK_WINDOW(win));
-}
-
-static void
 sm_app_startup(GApplication *app)
 {
     SmApp *sm_app;
@@ -228,7 +203,6 @@ sm_app_class_init(SmAppClass *class)
     g_set_prgname(PACKAGE_NAME);
     g_set_application_name(PACKAGE_NAME);
     G_APPLICATION_CLASS(class)->activate = sm_app_activate;
-    G_APPLICATION_CLASS(class)->open = sm_app_open;
     G_APPLICATION_CLASS(class)->startup = sm_app_startup;
     G_APPLICATION_CLASS(class)->shutdown = sm_app_shutdown;
 }
@@ -628,7 +602,7 @@ sm_app_new()
     g_debug("sm_app_new.");
     return g_object_new(SM_APP_TYPE,
                         "application-id", "org.alsa.scarlettmixer",
-                        "flags", G_APPLICATION_HANDLES_OPEN,
+                        "flags", G_APPLICATION_FLAGS_NONE,
                         NULL);
 }
 
