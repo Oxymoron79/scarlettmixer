@@ -145,6 +145,7 @@ open_config_button_clicked_cb(GtkButton *button, gpointer data)
             NULL);
     chooser = GTK_FILE_CHOOSER(dialog);
     gtk_file_chooser_add_filter(chooser, priv->file_filter);
+    gtk_file_chooser_set_current_folder(chooser, g_get_home_dir());
 
     res = gtk_dialog_run(GTK_DIALOG (dialog));
     if (res == GTK_RESPONSE_ACCEPT)
