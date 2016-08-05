@@ -84,6 +84,7 @@ sm_appwin_check_for_interface(gpointer win)
     SmAppWinPrivate *priv;
     gint card_number;
     const gchar *card_name;
+    GtkWidget *msg_dialog;
 
     priv = sm_appwin_get_instance_private(win);
     card_number = sm_app_find_card(priv->prefix);
@@ -95,18 +96,24 @@ sm_appwin_check_for_interface(gpointer win)
         //Load configuration from file set in settings
         settings = sm_app_get_settings(priv->app);
         configfile = g_settings_get_string(settings, "configfile");
-        if (g_file_test(configfile, G_FILE_TEST_EXISTS))
+        if (g_file_test(configfile, G_FILE_TEST_EXISTS) &&
+            sm_app_read_config_file(priv->app, configfile))
         {
             g_debug("Load configuration for from %s.", configfile);
-            if(!sm_app_read_config_file(priv->app, configfile))
-            {
-                //TODO: Show warning dialog
-                g_warning("Failed to read configuration from %s.", configfile);
-            }
-            else
-            {
-                gtk_label_set_text(priv->config_filename_label, configfile);
-            }
+            gtk_label_set_text(priv->config_filename_label, configfile);
+        }
+        else
+        {
+            //TODO: Show warning dialog
+            g_warning("Could not read configuration from %s.", configfile);
+            msg_dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                    GTK_MESSAGE_WARNING,
+                    GTK_BUTTONS_CLOSE,
+                    "Could not read configuration from %s!",
+                    configfile);
+            gtk_dialog_run(GTK_DIALOG(msg_dialog));
+            gtk_widget_destroy(msg_dialog);
         }
         g_free(configfile);
         sm_appwin_init_channels(win, card_name);
@@ -150,6 +157,7 @@ open_config_button_clicked_cb(GtkButton *button, gpointer data)
     SmAppWinPrivate *priv;
     SmApp *app;
     GtkWidget *dialog;
+    GtkWidget *msg_dialog;
     GtkFileChooser *chooser;
     GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
     gint res;
@@ -166,12 +174,13 @@ open_config_button_clicked_cb(GtkButton *button, gpointer data)
     gtk_file_chooser_add_filter(chooser, priv->file_filter);
     gtk_file_chooser_set_current_folder(chooser, g_get_home_dir());
 
-    res = gtk_dialog_run(GTK_DIALOG (dialog));
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
     if (res == GTK_RESPONSE_ACCEPT)
     {
         char *filename;
 
         filename = gtk_file_chooser_get_filename(chooser);
+        gtk_widget_destroy(dialog);
         g_debug("Read configuration from %s.", filename);
         if(sm_app_read_config_file(app, filename))
         {
@@ -179,12 +188,23 @@ open_config_button_clicked_cb(GtkButton *button, gpointer data)
         }
         else
         {
-            //TODO: Show warning dialog
-            g_warning("Failed to load configuration from %s!", filename);
+            //TODO: Show error dialog
+            g_warning("Could not read configuration from %s.", filename);
+            msg_dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                    GTK_MESSAGE_ERROR,
+                    GTK_BUTTONS_CLOSE,
+                    "Could not read configuration from %s!",
+                    filename);
+            gtk_dialog_run(GTK_DIALOG(msg_dialog));
+            gtk_widget_destroy(msg_dialog);
         }
         g_free(filename);
     }
-    gtk_widget_destroy(dialog);
+    else
+    {
+        gtk_widget_destroy(dialog);
+    }
 }
 
 static void

@@ -744,6 +744,7 @@ sm_app_write_config_file(SmApp *app, const char *filename)
     return TRUE;
 }
 
+//TODO: return errno or use a GError and give information on the error.
 gboolean
 sm_app_read_config_file(SmApp *app, const char *filename)
 {
