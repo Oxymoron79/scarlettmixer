@@ -191,6 +191,7 @@
             <property name="valign">center</property>
             <property name="always_show_image">True</property>
             <property name="active">True</property>
+            <signal name="toggled" handler="join_togglebutton_toggled_cb" object="SmStrip" swapped="no"/>
             <child>
               <object class="GtkImage" id="stereo-image">
                 <property name="visible">True</property>

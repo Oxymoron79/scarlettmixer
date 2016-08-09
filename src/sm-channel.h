@@ -47,6 +47,8 @@ gboolean          sm_channel_volume_get_db(SmChannel *self, snd_mixer_selem_chan
 gboolean          sm_channel_volume_set_db(SmChannel *self, snd_mixer_selem_channel_id_t ch, gdouble vol_db);
 gboolean          sm_channel_volume_get_mute(SmChannel *self, snd_mixer_selem_channel_id_t ch, int *mute);
 gboolean          sm_channel_volume_set_mute(SmChannel *self, snd_mixer_selem_channel_id_t ch, int mute);
+gboolean          sm_channel_get_joint_volume(SmChannel *self);
+void              sm_channel_set_joint_volume(SmChannel *self, gboolean joint);
 
 JsonNode*         sm_channel_to_json_node(SmChannel *self);
 gboolean          sm_channel_load_from_json_node(SmChannel *self, JsonNode *node);

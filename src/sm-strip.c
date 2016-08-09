@@ -160,6 +160,17 @@ mute_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpointer user_data)
 }
 
 static void
+join_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpointer user_data)
+{
+    SmStripPrivate *priv;
+    gboolean active;
+
+    priv = sm_strip_get_instance_private(user_data);
+    active = gtk_toggle_button_get_active(togglebutton);
+    sm_channel_set_joint_volume(priv->channel, active);
+}
+
+static void
 sm_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
 {
     SmStripPrivate *priv;
@@ -281,6 +292,8 @@ sm_strip_class_init(SmStripClass *class)
             scale_value_changed_cb);
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
             mute_togglebutton_toggled_cb);
+    gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
+            join_togglebutton_toggled_cb);
 }
 
 SmStrip*
@@ -300,6 +313,7 @@ sm_strip_new(SmChannel *channel)
     idx = 0;
     gtk_editable_delete_text(GTK_EDITABLE(priv->name_entry), 0, -1);
     gtk_editable_insert_text(GTK_EDITABLE(priv->name_entry), sm_channel_get_display_name(priv->channel), -1 ,&idx);
+    gtk_toggle_button_set_active(priv->join_togglebutton, sm_channel_get_joint_volume(priv->channel));
     switch (sm_channel_get_channel_type(channel))
     {
         case SM_CHANNEL_MASTER:

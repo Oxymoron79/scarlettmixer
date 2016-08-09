@@ -30,6 +30,7 @@ struct _SmChannel
     snd_mixer_elem_t *source_right;
     snd_mixer_elem_t *source_mix;
     sm_channel_type_t channel_type;
+    gboolean joint_volume;
     gchar *name;
     gchar *display_name;
     unsigned int id;
@@ -110,6 +111,7 @@ sm_channel_init(SmChannel *self)
     /* initialize all public and private members to reasonable default values.
      * They are all automatically initialized to 0 to begin with.
      */
+    self->joint_volume = TRUE;
 }
 
 SmChannel*
@@ -551,6 +553,18 @@ sm_channel_volume_set_mute(SmChannel *self, snd_mixer_selem_channel_id_t ch, int
     return TRUE;
 }
 
+gboolean
+sm_channel_get_joint_volume(SmChannel *self)
+{
+    return self->joint_volume;
+}
+
+void
+sm_channel_set_joint_volume(SmChannel *self, gboolean joint)
+{
+    self->joint_volume = joint;
+}
+
 JsonNode*
 sm_channel_to_json_node(SmChannel *self)
 {
@@ -600,6 +614,9 @@ sm_channel_to_json_node(SmChannel *self)
             jb = json_builder_add_boolean_value(jb, mute == 0);
             jb = json_builder_end_array(jb);
 
+            jb = json_builder_set_member_name(jb, "joint_vol");
+            jb = json_builder_add_boolean_value(jb, self->joint_volume);
+
             jb = json_builder_set_member_name(jb, "source_index");
             jb = json_builder_begin_array(jb);
             source_index = sm_channel_source_get_selected_item_index(self, SND_MIXER_SCHN_FRONT_LEFT);
@@ -635,6 +652,7 @@ sm_channel_load_from_json_node(SmChannel *self, JsonNode *node)
     gint64 type;
     gdouble vol_db;
     gboolean mute;
+    gboolean joint_vol;
 
     jo = json_node_get_object(node);
     if (!json_object_has_member(jo, "name"))
@@ -684,6 +702,9 @@ sm_channel_load_from_json_node(SmChannel *self, JsonNode *node)
                 mute = json_array_get_boolean_element(ja, 1);
                 sm_channel_volume_set_mute(self, SND_MIXER_SCHN_FRONT_RIGHT, mute == 0);
             }
+
+            self->joint_volume = json_object_get_boolean_member(jo, "joint_vol");
+
             ja = json_object_get_array_member(jo, "source_index");
             if (json_array_get_length(ja) >= 2)
             {
