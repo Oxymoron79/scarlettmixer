@@ -85,6 +85,7 @@ sm_appwin_check_for_interface(gpointer win)
     gint card_number;
     const gchar *card_name;
     GtkWidget *msg_dialog;
+    GError *err = NULL;
 
     priv = sm_appwin_get_instance_private(win);
     card_number = sm_app_find_card(priv->prefix);
@@ -97,21 +98,32 @@ sm_appwin_check_for_interface(gpointer win)
         settings = sm_app_get_settings(priv->app);
         configfile = g_settings_get_string(settings, "configfile");
         if (g_file_test(configfile, G_FILE_TEST_EXISTS) &&
-            sm_app_read_config_file(priv->app, configfile))
+            sm_app_read_config_file(priv->app, configfile, &err))
         {
             g_debug("Load configuration for from %s.", configfile);
             gtk_label_set_text(priv->config_filename_label, configfile);
         }
         else
         {
-            //TODO: Show warning dialog
             g_warning("Could not read configuration from %s.", configfile);
             msg_dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                     GTK_DIALOG_DESTROY_WITH_PARENT,
                     GTK_MESSAGE_WARNING,
                     GTK_BUTTONS_CLOSE,
-                    "Could not read configuration from %s!",
+                    "Warning: Could not read configuration from %s!",
                     configfile);
+            if (err == NULL)
+            {
+                gtk_message_dialog_format_secondary_text(
+                        GTK_MESSAGE_DIALOG(msg_dialog),
+                        "File not found.");
+            }
+            else
+            {
+                gtk_message_dialog_format_secondary_text(
+                        GTK_MESSAGE_DIALOG(msg_dialog),
+                        "%s", err->message);
+            }
             gtk_dialog_run(GTK_DIALOG(msg_dialog));
             gtk_widget_destroy(msg_dialog);
         }
@@ -161,6 +173,7 @@ open_config_button_clicked_cb(GtkButton *button, gpointer data)
     GtkFileChooser *chooser;
     GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
     gint res;
+    GError *err = NULL;
 
     win = SM_APPWIN(data);
     priv = sm_appwin_get_instance_private(win);
@@ -182,20 +195,22 @@ open_config_button_clicked_cb(GtkButton *button, gpointer data)
         filename = gtk_file_chooser_get_filename(chooser);
         gtk_widget_destroy(dialog);
         g_debug("Read configuration from %s.", filename);
-        if(sm_app_read_config_file(app, filename))
+        if(sm_app_read_config_file(app, filename, &err))
         {
             gtk_label_set_text(priv->config_filename_label, filename);
         }
         else
         {
-            //TODO: Show error dialog
             g_warning("Could not read configuration from %s.", filename);
             msg_dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                     GTK_DIALOG_DESTROY_WITH_PARENT,
                     GTK_MESSAGE_ERROR,
                     GTK_BUTTONS_CLOSE,
-                    "Could not read configuration from %s!",
+                    "Error: Could not read configuration from %s!",
                     filename);
+            gtk_message_dialog_format_secondary_text(
+                    GTK_MESSAGE_DIALOG(msg_dialog),
+                    "%s", err->message);
             gtk_dialog_run(GTK_DIALOG(msg_dialog));
             gtk_widget_destroy(msg_dialog);
         }
@@ -214,10 +229,12 @@ save_config_button_clicked_cb(GtkButton *button, gpointer data)
     SmAppWinPrivate *priv;
     SmApp *app;
     GtkWidget *dialog;
+    GtkWidget *msg_dialog;
     GtkFileChooser *chooser;
     GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SAVE;
     const char *config_filename;
     gint res;
+    GError *err = NULL;
 
     win = SM_APPWIN(data);
     priv = sm_appwin_get_instance_private(win);
@@ -245,12 +262,33 @@ save_config_button_clicked_cb(GtkButton *button, gpointer data)
     {
         char *filename;
         filename = gtk_file_chooser_get_filename(chooser);
+        gtk_widget_destroy(dialog);
         g_debug("Save configuration to %s.", filename);
-        sm_app_write_config_file(app, filename);
-        gtk_label_set_text(priv->config_filename_label, filename);
+        if (sm_app_write_config_file(app, filename, &err))
+        {
+            gtk_label_set_text(priv->config_filename_label, filename);
+        }
+        else
+        {
+            g_warning("Could not write configuration file %s.", filename);
+            msg_dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                    GTK_MESSAGE_ERROR,
+                    GTK_BUTTONS_CLOSE,
+                    "Error: Could not write configuration file %s!",
+                    filename);
+            gtk_message_dialog_format_secondary_text(
+                    GTK_MESSAGE_DIALOG(msg_dialog),
+                    "%s", err->message);
+            gtk_dialog_run(GTK_DIALOG(msg_dialog));
+            gtk_widget_destroy(msg_dialog);
+        }
         g_free(filename);
     }
-    gtk_widget_destroy(dialog);
+    else
+    {
+        gtk_widget_destroy(dialog);
+    }
 }
 
 static void

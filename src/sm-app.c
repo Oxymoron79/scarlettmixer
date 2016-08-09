@@ -60,6 +60,18 @@ static const gchar *prefix_scarlett = "Scarlett";
 static const gchar *prefix_intel = "HDA Intel";
 static const gchar *prefix = "Scarlett";
 
+#define SM_CONFIG_ERROR sm_config_error_quark()
+GQuark
+sm_config_error_quark()
+{
+    return g_quark_from_static_string("sm-config-error_quark");
+}
+
+enum SmConfigError
+{
+    SM_CONFIG_ERROR_FORMAT,
+    SM_CONFIG_ERROR_COMPATIBLE
+};
 
 static void
 sm_app_preferences_activated(GSimpleAction *action,
@@ -683,12 +695,11 @@ sm_app_get_sync_status(SmApp *app)
 }
 
 gboolean
-sm_app_write_config_file(SmApp *app, const char *filename)
+sm_app_write_config_file(SmApp *app, const char *filename, GError **err)
 {
     JsonBuilder *jb;
     JsonNode *jn;
     JsonGenerator *jg;
-    GError *e = NULL;
     GList *item;
 
     jb = json_builder_new();
@@ -736,7 +747,7 @@ sm_app_write_config_file(SmApp *app, const char *filename)
     jg = json_generator_new();
     json_generator_set_root(jg, jn);
     json_generator_set_pretty(jg, TRUE);
-    if(!json_generator_to_file(jg, filename, &e))
+    if(!json_generator_to_file(jg, filename, err))
     {
         g_print("Failed to write %s\n", filename);
         return FALSE;
@@ -744,15 +755,13 @@ sm_app_write_config_file(SmApp *app, const char *filename)
     return TRUE;
 }
 
-//TODO: return errno or use a GError and give information on the error.
 gboolean
-sm_app_read_config_file(SmApp *app, const char *filename)
+sm_app_read_config_file(SmApp *app, const char *filename, GError **err)
 {
     JsonParser *jp;
     JsonNode *jn;
     JsonObject *jo;
     JsonArray *ja;
-    GError *e = NULL;
     guint al, i;
     GList *gl;
     const gchar *card_name;
@@ -761,9 +770,9 @@ sm_app_read_config_file(SmApp *app, const char *filename)
     SmChannel *ch;
 
     jp = json_parser_new();
-    if(!json_parser_load_from_file(jp, filename, &e))
+    if(!json_parser_load_from_file(jp, filename, err))
     {
-        g_warning("Could not read file %s.", filename);
+        g_warning("Could not read file %s: %s", filename, (*err)->message);
         return FALSE;
     }
     g_debug("Successfully read %s.", filename);
@@ -771,27 +780,52 @@ sm_app_read_config_file(SmApp *app, const char *filename)
     if (!JSON_NODE_HOLDS_OBJECT(jn))
     {
         g_warning("Invalid file format.");
+        g_set_error(
+                err,
+                SM_CONFIG_ERROR,
+                SM_CONFIG_ERROR_FORMAT,
+                "Invalid file format: The root node is not an object.");
         return FALSE;
     }
     jo = json_node_get_object(jn);
     if (!json_object_has_member(jo, "card_name"))
     {
         g_warning("Invalid file format: No card_name member found!");
+        g_set_error(
+                err,
+                SM_CONFIG_ERROR,
+                SM_CONFIG_ERROR_FORMAT,
+                "Invalid file format: Could not get card name.");
         return FALSE;
     }
     if (!json_object_has_member(jo, "input_sources"))
     {
         g_warning("Invalid file format: No input_sources member found!");
+        g_set_error(
+                err,
+                SM_CONFIG_ERROR,
+                SM_CONFIG_ERROR_FORMAT,
+                "Invalid file format: No input sources.");
         return FALSE;
     }
     if (!json_object_has_member(jo, "input_switches"))
     {
         g_warning("Invalid file format: No input_switches member found!");
+        g_set_error(
+                err,
+                SM_CONFIG_ERROR,
+                SM_CONFIG_ERROR_FORMAT,
+                "Invalid file format: No input switches.");
         return FALSE;
     }
     if (!json_object_has_member(jo, "channels"))
     {
         g_warning("Invalid file format: No channels member found!");
+        g_set_error(
+                err,
+                SM_CONFIG_ERROR,
+                SM_CONFIG_ERROR_FORMAT,
+                "Invalid file format: No channels.");
         return FALSE;
     }
 
@@ -799,6 +833,12 @@ sm_app_read_config_file(SmApp *app, const char *filename)
     if (g_strcmp0(card_name, app->card_name) != 0)
     {
         g_warning("Configuration not applicable for card %s.", app->card_name);
+        g_set_error(
+                err,
+                SM_CONFIG_ERROR,
+                SM_CONFIG_ERROR_COMPATIBLE,
+                "Invalid file format: Configuration is not compatible with %s.",
+                app->card_name);
         return FALSE;
     }
 
@@ -848,32 +888,41 @@ sm_app_read_config_file(SmApp *app, const char *filename)
 }
 
 gchar*
-sm_app_read_card_name_from_config_file(const gchar *filename)
+sm_app_read_card_name_from_config_file(const gchar *filename, GError **err)
 {
     JsonParser *jp;
     JsonNode *jn;
     JsonObject *jo;
-    GError *e = NULL;
     gchar *card_name;
 
     jp = json_parser_new();
-    if(!json_parser_load_from_file(jp, filename, &e))
+    if(!json_parser_load_from_file(jp, filename, err))
     {
         g_object_unref(jp);
-        return g_strdup_printf("Could not read file %s.", filename);
+        return NULL;
     }
     g_debug("Successfully read %s.", filename);
     jn = json_parser_get_root(jp);
     if (!JSON_NODE_HOLDS_OBJECT(jn))
     {
         g_object_unref(jp);
-        return g_strdup("Invalid file format.");
+        g_set_error(
+                err,
+                SM_CONFIG_ERROR,
+                SM_CONFIG_ERROR_FORMAT,
+                "Invalid file format: The root node is not an object.");
+        return NULL;
     }
     jo = json_node_get_object(jn);
     if (!json_object_has_member(jo, "card_name"))
     {
         g_object_unref(jp);
-        return g_strdup("Invalid file format: No card_name member found!");
+        g_set_error(
+                err,
+                SM_CONFIG_ERROR,
+                SM_CONFIG_ERROR_FORMAT,
+                "Invalid file format: Could not get card name.");
+        return NULL;
     }
     card_name = g_strdup(json_object_get_string_member(jo, "card_name"));
     g_object_unref(jp);

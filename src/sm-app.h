@@ -24,7 +24,7 @@ GList*       sm_app_get_input_switches(SmApp *app);
 SmSwitch*    sm_app_get_clock_source(SmApp *app);
 SmSwitch*    sm_app_get_sync_status(SmApp *app);
 
-gchar*       sm_app_read_card_name_from_config_file(const gchar *filename);
-gboolean     sm_app_write_config_file(SmApp *app, const char *filename);
-gboolean     sm_app_read_config_file(SmApp *app, const char *filename);
+gchar*       sm_app_read_card_name_from_config_file(const gchar *filename, GError **err);
+gboolean     sm_app_write_config_file(SmApp *app, const char *filename, GError **err);
+gboolean     sm_app_read_config_file(SmApp *app, const char *filename, GError **err);
 #endif /* __SM_APP_H */

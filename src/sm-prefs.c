@@ -48,18 +48,32 @@ configfile_fchbtn_selection_changed_cb(GtkFileChooser *button, gpointer data)
     SmPrefs *prefs;
     SmPrefsPrivate *priv;
     gchar *card_name;
+    GError *err = NULL;
+    gchar *configfile;
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(button));
 
     prefs = SM_PREFS(data);
     priv = sm_prefs_get_instance_private(prefs);
     if (filename)
     {
-        g_debug("Config file preference changed: %s", filename);
-        g_settings_set_string(priv->settings, "configfile", filename);
-        card_name = sm_app_read_card_name_from_config_file(filename);
+        configfile = g_settings_get_string(priv->settings, "configfile");
+        if (g_strcmp0(configfile, filename) != 0)
+        {
+            g_debug("Config file preference changed: %s", filename);
+            g_settings_set_string(priv->settings, "configfile", filename);
+        }
+        g_free(configfile);
+        card_name = sm_app_read_card_name_from_config_file(filename, &err);
         g_free(filename);
-        gtk_label_set_text(priv->compatible_card_lbl, card_name);
-        g_free(card_name);
+        if (card_name != NULL)
+        {
+            gtk_label_set_text(priv->compatible_card_lbl, card_name);
+            g_free(card_name);
+        }
+        else
+        {
+            gtk_label_set_text(priv->compatible_card_lbl, err->message);
+        }
     }
     else
     {
