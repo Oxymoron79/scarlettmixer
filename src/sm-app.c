@@ -74,6 +74,54 @@ enum SmConfigError
 };
 
 static void
+sm_app_open_activated(GSimpleAction *action,
+        GVariant *parameter,
+        gpointer app)
+{
+    SmApp *sm_app;
+    GList *windows;
+    SmAppWin *win;
+    //TODO: Test app.open action
+    g_debug("sm_app_open_activated.");
+    sm_app = SM_APP(app);
+    windows = gtk_application_get_windows(GTK_APPLICATION(app));
+    win = SM_APPWIN(g_list_first(windows)->data);
+    sm_appwin_open_configfile(win);
+}
+
+static void
+sm_app_save_activated(GSimpleAction *action,
+        GVariant *parameter,
+        gpointer app)
+{
+    SmApp *sm_app;
+    GList *windows;
+    SmAppWin *win;
+    //TODO: Test app.save action
+    g_debug("sm_app_save_activated.");
+    sm_app = SM_APP(app);
+    windows = gtk_application_get_windows(GTK_APPLICATION(app));
+    win = SM_APPWIN(g_list_first(windows)->data);
+    sm_appwin_save_configfile(win);
+}
+
+static void
+sm_app_saveas_activated(GSimpleAction *action,
+        GVariant *parameter,
+        gpointer app)
+{
+    SmApp *sm_app;
+    GList *windows;
+    SmAppWin *win;
+    //TODO: Test app.saveas action
+    g_debug("sm_app_saveas_activated.");
+    sm_app = SM_APP(app);
+    windows = gtk_application_get_windows(GTK_APPLICATION(app));
+    win = SM_APPWIN(g_list_first(windows)->data);
+    sm_appwin_saveas_configfile(win);
+}
+
+static void
 sm_app_preferences_activated(GSimpleAction *action,
         GVariant *parameter,
         gpointer app)
@@ -125,6 +173,9 @@ sm_app_quit_activated(GSimpleAction *action,
 
 static GActionEntry app_actions[] =
 {
+    { "open", sm_app_open_activated, NULL, NULL, NULL },
+    { "save", sm_app_save_activated, NULL, NULL, NULL },
+    { "saveas", sm_app_saveas_activated, NULL, NULL, NULL },
     { "preferences", sm_app_preferences_activated, NULL, NULL, NULL },
     { "about", sm_app_about_activated, NULL, NULL, NULL },
     { "quit", sm_app_quit_activated, NULL, NULL, NULL }
@@ -158,6 +209,9 @@ sm_app_startup(GApplication *app)
     GSettingsBackend *gs_backend;
     GtkBuilder *builder;
     GMenuModel *app_menu;
+    const gchar *open_accels[2] = { "<Ctrl>O", NULL };
+    const gchar *save_accels[2] = { "<Ctrl>S", NULL };
+    const gchar *saveas_accels[2] = { "<Ctrl><Shift>S", NULL };
     const gchar *quit_accels[2] = { "<Ctrl>Q", NULL };
 
     g_debug("sm_app_startup.");
@@ -169,6 +223,15 @@ sm_app_startup(GApplication *app)
             app_actions,
             G_N_ELEMENTS(app_actions),
             app);
+    gtk_application_set_accels_for_action(GTK_APPLICATION(app),
+            "app.open",
+            open_accels);
+    gtk_application_set_accels_for_action(GTK_APPLICATION(app),
+            "app.save",
+            save_accels);
+    gtk_application_set_accels_for_action(GTK_APPLICATION(app),
+            "app.saveas",
+            saveas_accels);
     gtk_application_set_accels_for_action(GTK_APPLICATION(app),
             "app.quit",
             quit_accels);

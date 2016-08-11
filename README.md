@@ -16,7 +16,7 @@ The toolchain to build the application from source depends on these tools:
 
 The application depends on these libraries:
 - alsa-lib >= 1.0.0
-- Gtk+ >= 3.12
+- Gtk+ >= 3.16
 - JSON-Glib >= 1.0
 
 The application is built with these commands:

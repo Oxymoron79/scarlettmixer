@@ -1,8 +1,90 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.20.0 -->
 <interface>
-  <requires lib="gtk+" version="3.12"/>
+  <requires lib="gtk+" version="3.16"/>
   <!-- interface-css-provider-path sm-appwin.css -->
+  <object class="GtkPopoverMenu" id="config_menu_popover">
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkBox" id="config_menu_box">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="border_width">12</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkModelButton" id="config_menu_open_modelbutton">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="action_name">app.open</property>
+            <property name="text" translatable="yes">Open</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkModelButton" id="config_menu_save_modelbutton">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="action_name">app.save</property>
+            <property name="text" translatable="yes">Save</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkModelButton" id="config_menu_save_as_modelbutton">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="action_name">app.saveas</property>
+            <property name="text" translatable="yes">Save As...</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkModelButton" id="config_menu_quit_modelbutton">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="action_name">app.quit</property>
+            <property name="text" translatable="yes">Quit</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="submenu">main</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+  </object>
   <object class="GtkImage" id="input_sources_image">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -463,8 +545,8 @@ Please make sure the interface is connected and is powered on.</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="tooltip_text" translatable="yes">Open configuration.</property>
+            <property name="action_name">app.open</property>
             <property name="use_stock">True</property>
-            <signal name="clicked" handler="open_config_button_clicked_cb" object="SmAppWin" swapped="no"/>
             <style>
               <class name="suggested-action"/>
             </style>
@@ -521,18 +603,36 @@ Please make sure the interface is connected and is powered on.</property>
           </object>
         </child>
         <child>
-          <object class="GtkButton" id="save_config_button">
-            <property name="label">gtk-save-as</property>
-            <property name="width_request">72</property>
+          <object class="GtkMenuButton" id="config_menubutton">
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Save configuration.</property>
-            <property name="use_stock">True</property>
-            <signal name="clicked" handler="save_config_button_clicked_cb" object="SmAppWin" swapped="no"/>
+            <property name="popover">config_menu_popover</property>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="icon_name">open-menu-symbolic</property>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="pack_type">end</property>
             <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="save_config_button">
+            <property name="label">gtk-save</property>
+            <property name="width_request">72</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Save configuration.</property>
+            <property name="action_name">app.save</property>
+            <property name="use_stock">True</property>
+          </object>
+          <packing>
+            <property name="pack_type">end</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>

@@ -52,6 +52,7 @@ struct _SmAppWinPrivate
     GtkButton *open_config_button;
     GtkToggleButton *reveal_input_config_togglebutton;
     GtkButton *save_config_button;
+    GtkMenuButton *config_menubutton;
     GtkStack *main_stack;
     GtkNotebook *output_mix_notebook;
     GList *mix_pages;
@@ -103,8 +104,10 @@ sm_appwin_check_for_interface(gpointer win)
             g_debug("Load configuration for from %s.", configfile);
             gtk_label_set_text(priv->config_filename_label, configfile);
         }
-        else
+        else if (g_utf8_strlen(configfile, -1) > 0)
         {
+            // Invalid configuration file is set in settings.
+            // Show warning dialog.
             g_warning("Could not read configuration from %s.", configfile);
             msg_dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                     GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -130,7 +133,8 @@ sm_appwin_check_for_interface(gpointer win)
         g_free(configfile);
         sm_appwin_init_channels(win, card_name);
     }
-    else {
+    else
+    {
         g_debug("No interface with prefix %s found.", priv->prefix);
         gtk_stack_set_visible_child_name(priv->main_stack, "error");
     }
@@ -160,135 +164,6 @@ reveal_input_config_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpoin
 
     active = gtk_toggle_button_get_active(togglebutton);
     gtk_revealer_set_reveal_child(revealer, active);
-}
-
-static void
-open_config_button_clicked_cb(GtkButton *button, gpointer data)
-{
-    SmAppWin *win;
-    SmAppWinPrivate *priv;
-    SmApp *app;
-    GtkWidget *dialog;
-    GtkWidget *msg_dialog;
-    GtkFileChooser *chooser;
-    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
-    gint res;
-    GError *err = NULL;
-
-    win = SM_APPWIN(data);
-    priv = sm_appwin_get_instance_private(win);
-    app = SM_APP(priv->app);
-    dialog = gtk_file_chooser_dialog_new("Open Configuration",
-            GTK_WINDOW(win), action,
-            "_Cancel", GTK_RESPONSE_CANCEL,
-            "_Open", GTK_RESPONSE_ACCEPT,
-            NULL);
-    chooser = GTK_FILE_CHOOSER(dialog);
-    gtk_file_chooser_add_filter(chooser, priv->file_filter);
-    gtk_file_chooser_set_current_folder(chooser, g_get_home_dir());
-
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    if (res == GTK_RESPONSE_ACCEPT)
-    {
-        char *filename;
-
-        filename = gtk_file_chooser_get_filename(chooser);
-        gtk_widget_destroy(dialog);
-        g_debug("Read configuration from %s.", filename);
-        if(sm_app_read_config_file(app, filename, &err))
-        {
-            gtk_label_set_text(priv->config_filename_label, filename);
-        }
-        else
-        {
-            g_warning("Could not read configuration from %s.", filename);
-            msg_dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-                    GTK_DIALOG_DESTROY_WITH_PARENT,
-                    GTK_MESSAGE_ERROR,
-                    GTK_BUTTONS_CLOSE,
-                    "Error: Could not read configuration from %s!",
-                    filename);
-            gtk_message_dialog_format_secondary_text(
-                    GTK_MESSAGE_DIALOG(msg_dialog),
-                    "%s", err->message);
-            gtk_dialog_run(GTK_DIALOG(msg_dialog));
-            gtk_widget_destroy(msg_dialog);
-        }
-        g_free(filename);
-    }
-    else
-    {
-        gtk_widget_destroy(dialog);
-    }
-}
-
-static void
-save_config_button_clicked_cb(GtkButton *button, gpointer data)
-{
-    SmAppWin *win;
-    SmAppWinPrivate *priv;
-    SmApp *app;
-    GtkWidget *dialog;
-    GtkWidget *msg_dialog;
-    GtkFileChooser *chooser;
-    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SAVE;
-    const char *config_filename;
-    gint res;
-    GError *err = NULL;
-
-    win = SM_APPWIN(data);
-    priv = sm_appwin_get_instance_private(win);
-    app = SM_APP(priv->app);
-    dialog = gtk_file_chooser_dialog_new("Save Configuration",
-            GTK_WINDOW(win), action,
-            "_Cancel", GTK_RESPONSE_CANCEL,
-            "_Save", GTK_RESPONSE_ACCEPT,
-            NULL);
-    chooser = GTK_FILE_CHOOSER(dialog);
-    gtk_file_chooser_add_filter(chooser, priv->file_filter);
-
-    config_filename = gtk_label_get_text(priv->config_filename_label);
-    if (g_file_test(config_filename, G_FILE_TEST_EXISTS))
-    {
-        gtk_file_chooser_set_filename(chooser, config_filename);
-    }
-    else
-    {
-        gtk_file_chooser_set_current_name(chooser, "MixerConfig.json");
-    }
-
-    res = gtk_dialog_run(GTK_DIALOG (dialog));
-    if (res == GTK_RESPONSE_ACCEPT)
-    {
-        char *filename;
-        filename = gtk_file_chooser_get_filename(chooser);
-        gtk_widget_destroy(dialog);
-        g_debug("Save configuration to %s.", filename);
-        if (sm_app_write_config_file(app, filename, &err))
-        {
-            gtk_label_set_text(priv->config_filename_label, filename);
-        }
-        else
-        {
-            g_warning("Could not write configuration file %s.", filename);
-            msg_dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-                    GTK_DIALOG_DESTROY_WITH_PARENT,
-                    GTK_MESSAGE_ERROR,
-                    GTK_BUTTONS_CLOSE,
-                    "Error: Could not write configuration file %s!",
-                    filename);
-            gtk_message_dialog_format_secondary_text(
-                    GTK_MESSAGE_DIALOG(msg_dialog),
-                    "%s", err->message);
-            gtk_dialog_run(GTK_DIALOG(msg_dialog));
-            gtk_widget_destroy(msg_dialog);
-        }
-        g_free(filename);
-    }
-    else
-    {
-        gtk_widget_destroy(dialog);
-    }
 }
 
 static void
@@ -346,6 +221,8 @@ sm_appwin_class_init(SmAppWinClass *class)
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             SmAppWin, save_config_button);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
+            SmAppWin, config_menubutton);
+    gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             SmAppWin, main_stack);
     gtk_widget_class_bind_template_child_private(GTK_WIDGET_CLASS(class),
             SmAppWin, output_mix_notebook);
@@ -363,13 +240,9 @@ sm_appwin_class_init(SmAppWinClass *class)
             SmAppWin, sync_status_entry);
 
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
-            open_config_button_clicked_cb);
-    gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
             reveal_input_config_togglebutton_toggled_cb);
     gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
             refresh_button_clicked_cb);
-    gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class),
-            save_config_button_clicked_cb);
 }
 
 static void
@@ -579,6 +452,7 @@ sm_appwin_init_input_sources(gpointer data)
         gtk_widget_show(GTK_WIDGET(arg->priv->open_config_button));
         gtk_widget_show(GTK_WIDGET(arg->priv->reveal_input_config_togglebutton));
         gtk_widget_show(GTK_WIDGET(arg->priv->save_config_button));
+        gtk_widget_show(GTK_WIDGET(arg->priv->config_menubutton));
         gtk_widget_show_all(GTK_WIDGET(arg->priv->input_sources_box));
         g_free(arg);
         return FALSE;
@@ -738,4 +612,168 @@ sm_appwin_get_file_filter(SmAppWin *win)
 
     priv = sm_appwin_get_instance_private(win);
     return g_object_ref(priv->file_filter);
+}
+
+void
+sm_appwin_open_configfile(SmAppWin *win)
+{
+    SmAppWinPrivate *priv;
+    SmApp *app;
+    GtkWidget *dialog;
+    GtkWidget *msg_dialog;
+    GtkFileChooser *chooser;
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+    gint res;
+    GError *err = NULL;
+
+    priv = sm_appwin_get_instance_private(win);
+    app = SM_APP(priv->app);
+    dialog = gtk_file_chooser_dialog_new("Open Configuration",
+            GTK_WINDOW(win), action,
+            "_Cancel", GTK_RESPONSE_CANCEL,
+            "_Open", GTK_RESPONSE_ACCEPT,
+            NULL);
+    chooser = GTK_FILE_CHOOSER(dialog);
+    gtk_file_chooser_add_filter(chooser, priv->file_filter);
+    gtk_file_chooser_set_current_folder(chooser, g_get_home_dir());
+
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (res == GTK_RESPONSE_ACCEPT)
+    {
+        char *filename;
+
+        filename = gtk_file_chooser_get_filename(chooser);
+        gtk_widget_destroy(dialog);
+        g_debug("Read configuration from %s.", filename);
+        if(sm_app_read_config_file(app, filename, &err))
+        {
+            gtk_label_set_text(priv->config_filename_label, filename);
+        }
+        else
+        {
+            g_warning("Could not read configuration from %s.", filename);
+            msg_dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                    GTK_MESSAGE_ERROR,
+                    GTK_BUTTONS_CLOSE,
+                    "Error: Could not read configuration from %s!",
+                    filename);
+            gtk_message_dialog_format_secondary_text(
+                    GTK_MESSAGE_DIALOG(msg_dialog),
+                    "%s", err->message);
+            gtk_dialog_run(GTK_DIALOG(msg_dialog));
+            gtk_widget_destroy(msg_dialog);
+        }
+        g_free(filename);
+    }
+    else
+    {
+        gtk_widget_destroy(dialog);
+    }
+}
+
+void
+sm_appwin_save_configfile(SmAppWin *win)
+{
+    //TODO: Test save procedure
+    SmAppWinPrivate *priv;
+    SmApp *app;
+    GtkWidget *msg_dialog;
+    const char *config_filename;
+    GError *err = NULL;
+
+    priv = sm_appwin_get_instance_private(win);
+    app = SM_APP(priv->app);
+    config_filename = gtk_label_get_text(priv->config_filename_label);
+    if (g_file_test(config_filename, G_FILE_TEST_EXISTS))
+    {
+        g_debug("Save configuration to %s.", config_filename);
+        if (!sm_app_write_config_file(app, config_filename, &err))
+        {
+            g_warning("Could not write configuration file %s.", config_filename);
+            msg_dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                    GTK_MESSAGE_ERROR,
+                    GTK_BUTTONS_CLOSE,
+                    "Error: Could not write configuration file %s!",
+                    config_filename);
+            gtk_message_dialog_format_secondary_text(
+                    GTK_MESSAGE_DIALOG(msg_dialog),
+                    "%s", err->message);
+            gtk_dialog_run(GTK_DIALOG(msg_dialog));
+            gtk_widget_destroy(msg_dialog);
+        }
+    }
+    else
+    {
+        sm_appwin_saveas_configfile(win);
+    }
+}
+
+void
+sm_appwin_saveas_configfile(SmAppWin *win)
+{
+    //TODO: Test saveas procedure
+    SmAppWinPrivate *priv;
+    SmApp *app;
+    GtkWidget *dialog;
+    GtkWidget *msg_dialog;
+    GtkFileChooser *chooser;
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SAVE;
+    const char *config_filename;
+    gint res;
+    GError *err = NULL;
+
+    priv = sm_appwin_get_instance_private(win);
+    app = SM_APP(priv->app);
+    dialog = gtk_file_chooser_dialog_new("Save Configuration",
+            GTK_WINDOW(win), action,
+            "_Cancel", GTK_RESPONSE_CANCEL,
+            "_Save", GTK_RESPONSE_ACCEPT,
+            NULL);
+    chooser = GTK_FILE_CHOOSER(dialog);
+    gtk_file_chooser_add_filter(chooser, priv->file_filter);
+
+    config_filename = gtk_label_get_text(priv->config_filename_label);
+    if (g_file_test(config_filename, G_FILE_TEST_EXISTS))
+    {
+        gtk_file_chooser_set_filename(chooser, config_filename);
+    }
+    else
+    {
+        gtk_file_chooser_set_current_name(chooser, "MixerConfig.json");
+    }
+
+    res = gtk_dialog_run(GTK_DIALOG (dialog));
+    if (res == GTK_RESPONSE_ACCEPT)
+    {
+        char *filename;
+        filename = gtk_file_chooser_get_filename(chooser);
+        gtk_widget_destroy(dialog);
+        g_debug("Save configuration to %s.", filename);
+        if (sm_app_write_config_file(app, filename, &err))
+        {
+            gtk_label_set_text(priv->config_filename_label, filename);
+        }
+        else
+        {
+            g_warning("Could not write configuration file %s.", filename);
+            msg_dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                    GTK_MESSAGE_ERROR,
+                    GTK_BUTTONS_CLOSE,
+                    "Error: Could not write configuration file %s!",
+                    filename);
+            gtk_message_dialog_format_secondary_text(
+                    GTK_MESSAGE_DIALOG(msg_dialog),
+                    "%s", err->message);
+            gtk_dialog_run(GTK_DIALOG(msg_dialog));
+            gtk_widget_destroy(msg_dialog);
+        }
+        g_free(filename);
+    }
+    else
+    {
+        gtk_widget_destroy(dialog);
+    }
 }

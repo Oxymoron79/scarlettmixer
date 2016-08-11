@@ -25,7 +25,7 @@ dnl Libraries
 AC_CHECK_LIBM
 AC_SUBST(LIBM)
 PKG_CHECK_MODULES(ALSA, alsa)
-PKG_CHECK_MODULES(GTK, gtk+-3.0 >= 3.12 gobject-2.0 json-glib-1.0 >= 1.0)
+PKG_CHECK_MODULES(GTK, gtk+-3.0 >= 3.16 gobject-2.0 json-glib-1.0 >= 1.0)
 
 dnl Output
 AC_CONFIG_FILES(Makefile src/Makefile)
