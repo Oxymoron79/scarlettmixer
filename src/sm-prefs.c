@@ -138,8 +138,11 @@ sm_prefs_new(SmAppWin *win)
     g_object_get(win, "application", &app, NULL);
     priv->settings = sm_app_get_settings(SM_APP(app));
     configfile = g_settings_get_string(priv->settings, "configfile");
-    g_debug("sm_prefs_new: configfile: %s", configfile);
-    gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(priv->configfile_fchbtn), configfile);
+    if (g_utf8_strlen(configfile, -1) > 0)
+    {
+        g_debug("sm_prefs_new: configfile: %s", configfile);
+        gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(priv->configfile_fchbtn), configfile);
+    }
     g_free(configfile);
     return prefs;
 }
