@@ -81,9 +81,13 @@ sm_app_open_activated(GSimpleAction *action,
     SmApp *sm_app;
     GList *windows;
     SmAppWin *win;
-    //TODO: Test app.open action
     g_debug("sm_app_open_activated.");
     sm_app = SM_APP(app);
+    // Only run if interface is present
+    if (sm_app->card_name == NULL)
+    {
+        return;
+    }
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     win = SM_APPWIN(g_list_first(windows)->data);
     sm_appwin_open_configfile(win);
@@ -97,9 +101,13 @@ sm_app_save_activated(GSimpleAction *action,
     SmApp *sm_app;
     GList *windows;
     SmAppWin *win;
-    //TODO: Test app.save action
     g_debug("sm_app_save_activated.");
     sm_app = SM_APP(app);
+    // Only run if interface is present
+    if (sm_app->card_name == NULL)
+    {
+        return;
+    }
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     win = SM_APPWIN(g_list_first(windows)->data);
     sm_appwin_save_configfile(win);
@@ -113,9 +121,13 @@ sm_app_saveas_activated(GSimpleAction *action,
     SmApp *sm_app;
     GList *windows;
     SmAppWin *win;
-    //TODO: Test app.saveas action
     g_debug("sm_app_saveas_activated.");
     sm_app = SM_APP(app);
+    // Only run if interface is present
+    if (sm_app->card_name == NULL)
+    {
+        return;
+    }
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     win = SM_APPWIN(g_list_first(windows)->data);
     sm_appwin_saveas_configfile(win);
@@ -547,19 +559,7 @@ sm_app_open_mixer(SmApp *app, int card_number)
         g_critical("Cannot get HCTL: %s", snd_strerror(err));
         snd_mixer_close(app->mixer);
         return NULL;
-    }/*
-    else
-    {
-        snd_hctl_elem_t *hel;
-        g_debug("hctl: %d elements.", snd_hctl_get_count(app->hctl));
-        for(hel=snd_hctl_first_elem(app->hctl); hel; hel=snd_hctl_elem_next(hel))
-        {
-            g_debug("list helem: numid=%u, name=%s, interface=%s",
-                    snd_hctl_elem_get_numid(hel),
-                    snd_hctl_elem_get_name(hel),
-                    snd_ctl_elem_iface_name(snd_hctl_elem_get_interface(hel)));
-        }
-    }*/
+    }
     snd_ctl_card_info_malloc(&(app->card_info));
     err = snd_ctl_card_info(snd_hctl_ctl(app->hctl), app->card_info);
     if (err < 0)
@@ -582,10 +582,6 @@ sm_app_open_mixer(SmApp *app, int card_number)
         }
         g_free(pfds);
     }
-/*
-    g_debug("%d mixer elements.", snd_mixer_get_count(mixer));
-    g_debug("%d hctl elements.", snd_hctl_get_count(hctl));
-*/
     for (elem = snd_mixer_first_elem(app->mixer);
             elem;
             elem = snd_mixer_elem_next(elem))

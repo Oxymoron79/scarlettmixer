@@ -675,7 +675,6 @@ sm_appwin_open_configfile(SmAppWin *win)
 void
 sm_appwin_save_configfile(SmAppWin *win)
 {
-    //TODO: Test save procedure
     SmAppWinPrivate *priv;
     SmApp *app;
     GtkWidget *msg_dialog;
@@ -713,7 +712,6 @@ sm_appwin_save_configfile(SmAppWin *win)
 void
 sm_appwin_saveas_configfile(SmAppWin *win)
 {
-    //TODO: Test saveas procedure
     SmAppWinPrivate *priv;
     SmApp *app;
     GtkWidget *dialog;
