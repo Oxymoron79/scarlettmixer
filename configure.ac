@@ -8,7 +8,7 @@ AC_INIT([Scarlett Mixer],
         [scarlettmixer],
         [http://www.github.com/Oxymoron79/scarlettmixer])
 AC_CONFIG_SRCDIR([src/scarlettmixer.c])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADER([src/config.h])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE([1.11 -Wall foreign])
 
