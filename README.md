@@ -22,7 +22,7 @@ The application depends on these libraries:
 The application is built with these commands:
 ```
 autoreconf -i
-configure
+./configure
 make
 ```
 Install the application:
