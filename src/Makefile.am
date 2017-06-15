@@ -41,7 +41,7 @@ if COMPILE_GSCHEMAS
 BUILT_SOURCES += gschemas.compiled
 
 gschemas.compiled: org.alsa.scarlettmixer.gschema.xml
-	$(GLIB_COMPILE_SCHEMAS) .
+	$(GLIB_COMPILE_SCHEMAS) --targetdir=$(builddir) $(srcdir)
 endif
 
 CLEANFILES = $(BUILT_SOURCES)
