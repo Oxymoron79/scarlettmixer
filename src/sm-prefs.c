@@ -21,23 +21,35 @@
 #include "sm-prefs.h"
 #include "sm-app.h"
 
+/**
+ * @brief Structure representing the preferences dialog class.
+ */
 struct _SmPrefsClass
 {
-    GtkDialogClass parent_class;
+    GtkDialogClass parent_class; ///< Parent class.
 };
 
+/**
+ * @brief Structure holding the public attributes of the preferences dialog.
+ */
 struct _SmPrefs
 {
-    GtkDialog parent;
+    GtkDialog parent; ///< Parent object.
 };
 
+/**
+ * @brief Type definition for private object of the preferences dialog.
+ */
 typedef struct _SmPrefsPrivate SmPrefsPrivate;
 
+/**
+ * @brief Structure holding the private attributes of the mix strip widget object.
+ */
 struct _SmPrefsPrivate
 {
-    GSettings *settings;
-    GtkFileChooserButton *configfile_fchbtn;
-    GtkLabel *compatible_card_lbl;
+    GSettings *settings; ///< GSettings object.
+    GtkFileChooserButton *configfile_fchbtn; ///< File chooser dialog object.
+    GtkLabel *compatible_card_lbl; ///< Label to display compatible card of selected settings file.
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(SmPrefs, sm_prefs, GTK_TYPE_WINDOW);

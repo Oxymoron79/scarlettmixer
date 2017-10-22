@@ -20,29 +20,32 @@
 
 #include "sm-channel.h"
 
+/**
+ * @brief Structure holding the ALSA mixer elements belonging to an output channel.
+ */
 struct _SmChannel
 {
-    GObject parent_instance;
+    GObject parent_instance; ///< Parent object.
 
     /* Other members, including private data. */
-    snd_mixer_elem_t *volume;
-    snd_mixer_elem_t *source_left;
-    snd_mixer_elem_t *source_right;
-    snd_mixer_elem_t *source_mix;
-    sm_channel_type_t channel_type;
-    gboolean joint_volume;
-    gchar *name;
-    gchar *display_name;
-    unsigned int id;
-    gchar mix_id;
+    snd_mixer_elem_t *volume; ///< Volume ALSA mixer element.
+    snd_mixer_elem_t *source_left; ///< Source ALSA mixer element for left channel.
+    snd_mixer_elem_t *source_right; ///< Source ALSA mixer element for right channel.
+    snd_mixer_elem_t *source_mix; ///< Source ALSA mixer element for Matrix Mix channel.
+    sm_channel_type_t channel_type; ///< Channel type.
+    gboolean joint_volume; ///< Indicates if @ref _SmChannel::volume has joint volume.
+    gchar *name; ///< ALSA name.
+    gchar *display_name; ///< Name to display in UI.
+    unsigned int id; ///< ID parsed from @ref _SmChannel::name.
+    gchar mix_id; ///< Mix ID parsed from @ref _SmChannel::name. Only valid for @ref SM_CHANNEL_MIX channel types.
 };
 
 G_DEFINE_TYPE(SmChannel, sm_channel, G_TYPE_OBJECT);
 
 enum
 {
-    SM_CHANNEL_SIGNAL_CHANGED,
-    N_SIGNALS
+    SM_CHANNEL_SIGNAL_CHANGED, ///< Channel changed signal.
+    N_SIGNALS ///< Number of signals.
 };
 
 static int sm_channel_signals[N_SIGNALS] = {0};

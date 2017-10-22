@@ -21,34 +21,46 @@
 
 #include "sm-strip.h"
 
+/**
+ * @brief Structure representing the strip widget class.
+ */
 struct _SmStripClass
 {
-    GtkBoxClass parent_class;
+    GtkBoxClass parent_class; ///< Parent class.
 };
 
+/**
+ * @brief Structure holding the public attributes of the strip widget.
+ */
 struct _SmStrip
 {
-    GtkBox parent;
+    GtkBox parent; ///< Parent object.
 };
 
+/**
+ * @brief Type definition for private object of the strip widget.
+ */
 typedef struct _SmStripPrivate SmStripPrivate;
 
+/**
+ * @brief Structure holding the private attributes of the strip widget object.
+ */
 struct _SmStripPrivate
 {
-    SmChannel *channel;
-    gulong changed_handler_id;
-    GtkEntry *name_entry;
-    GtkComboBoxText *left_scale_source_comboboxtext;
-    GtkScale *left_scale;
-    GtkAdjustment *left_adjustment;
-    GtkLevelBar *left_levelbar;
-    GtkToggleButton *left_mute_togglebutton;
-    GtkComboBoxText *right_scale_source_comboboxtext;
-    GtkScale *right_scale;
-    GtkAdjustment *right_adjustment;
-    GtkLevelBar *right_levelbar;
-    GtkToggleButton *right_mute_togglebutton;
-    GtkToggleButton *join_togglebutton;
+    SmChannel *channel; ///< SmChannel associated with this strip widget.
+    gulong changed_handler_id; ///< Signal handler for the "changed" signal of the associated SmChannel.
+    GtkEntry *name_entry; ///< Widget to set the name of this mix strip widget.
+    GtkComboBoxText *left_scale_source_comboboxtext; ///< Drop down widget to select the input channel for the left channel of the associated SmChannel.
+    GtkScale *left_scale; ///< Widget to set the volume of the left channel.
+    GtkAdjustment *left_adjustment; ///< Widget to display the volume ticks of the left channel.
+    GtkLevelBar *left_levelbar; ///< Widget to show the volume level of the left channel.
+    GtkToggleButton *left_mute_togglebutton; ///< Widget to mute the left channel.
+    GtkComboBoxText *right_scale_source_comboboxtext; ///< Drop down widget to select the input channel for the right channel of the associated SmChannel.
+    GtkScale *right_scale; ///< Widget to set the volume of the right channel.
+    GtkAdjustment *right_adjustment; ///< Widget to display the volume ticks of the right channel.
+    GtkLevelBar *right_levelbar; ///< Widget to show the volume level of the right channel.
+    GtkToggleButton *right_mute_togglebutton; ///< Widget to mute the right channel.
+    GtkToggleButton *join_togglebutton; ///< Widget to join the actions of both channels.
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(SmStrip, sm_strip, GTK_TYPE_BOX);

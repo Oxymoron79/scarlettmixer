@@ -18,13 +18,16 @@
 
 #include "sm-source.h"
 
+/**
+ * @brief Structure holding the ALSA mixer elements belonging to an input source.
+ */
 struct _SmSource
 {
-    GObject parent_instance;
+    GObject parent_instance; ///< Parent object.
 
     /* Other members, including private data. */
-    snd_mixer_elem_t *elem;
-    gchar *name;
+    snd_mixer_elem_t *elem; ///< Input source ALSA mixer element.
+    gchar *name; ///< Input source name.
 };
 
 G_DEFINE_TYPE(SmSource, sm_source, G_TYPE_OBJECT);

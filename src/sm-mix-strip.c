@@ -21,30 +21,42 @@
 
 #include "sm-mix-strip.h"
 
+/**
+ * @brief Structure representing the mix strip widget class.
+ */
 struct _SmMixStripClass
 {
-    GtkBoxClass parent_class;
+    GtkBoxClass parent_class; ///< Parent class.
 };
 
+/**
+ * @brief Structure holding the public attributes of the mix strip widget.
+ */
 struct _SmMixStrip
 {
-    GtkBox parent;
+    GtkBox parent; ///< Parent object.
 };
 
+/**
+ * @brief Type definition for private object of the mix strip widget.
+ */
 typedef struct _SmMixStripPrivate SmMixStripPrivate;
 
+/**
+ * @brief Structure holding the private attributes of the mix strip widget object.
+ */
 struct _SmMixStripPrivate
 {
-    SmChannel *channel[2];
-    unsigned int channel_id;
-    gchar mix_ids[3];
-    gulong changed_handler_id[2];
-    GtkEntry *name_entry;
-    GtkComboBoxText *source_comboboxtext;
-    GtkScale *balance_scale;
-    GtkScale *volume_scale;
-    GtkAdjustment *volume_adjustment;
-    GtkLevelBar *levelbar;
+    SmChannel *channel[2]; ///< SmChannels associated with this mix strip widget.
+    unsigned int channel_id; ///< The channel id this mix strip widget is associated with.
+    gchar mix_ids[3]; ///< The Matrix Mix ids this mix strip widget is associated with.
+    gulong changed_handler_id[2]; ///< Signal handlers for the "changed" signal of the associated SmChannels.
+    GtkEntry *name_entry; ///< Widget to set the name of this mix strip widget.
+    GtkComboBoxText *source_comboboxtext; ///< Drop down widget to select the input channels.
+    GtkScale *balance_scale; ///< Widget to set the balance.
+    GtkScale *volume_scale; ///< Widget to set the volume.
+    GtkAdjustment *volume_adjustment; ///< Widget to display the volume ticks.
+    GtkLevelBar *levelbar; ///< Widget to show the volume level.
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(SmMixStrip, sm_mix_strip, GTK_TYPE_BOX);

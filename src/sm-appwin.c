@@ -30,46 +30,64 @@
 #define SM_APPWIN_BOX_MARGIN (6)
 #define SM_APPWIN_BOX_PADDING (3)
 
+/**
+ * @brief Structure holding the public attributes of the application window object.
+ */
 struct _SmAppWin
 {
-    GtkApplicationWindow parent;
+    GtkApplicationWindow parent; ///< Parent object.
 };
 
+/**
+ * @brief Structure representing the application window class.
+ */
 struct _SmAppWinClass
 {
-    GtkApplicationWindowClass parent_class;
+    GtkApplicationWindowClass parent_class;  ///< Parent class.
 };
 
+/**
+ * @brief Type definition for private object of the application window.
+ */
 typedef struct _SmAppWinPrivate SmAppWinPrivate;
 
+/**
+ * @brief Structure holding the private attributes of the application window object.
+ */
 struct _SmAppWinPrivate
 {
-    SmApp *app;
-    const gchar* prefix;
-    GtkFileFilter *file_filter;
-    GtkLabel *card_name_label;
-    GtkLabel *config_filename_label;
-    GtkButton *open_config_button;
-    GtkToggleButton *reveal_input_config_togglebutton;
-    GtkButton *save_config_button;
-    GtkMenuButton *config_menubutton;
-    GtkStack *main_stack;
-    GtkNotebook *output_mix_notebook;
-    GList *mix_pages;
-    GtkBox *output_channel_main_box;
-    GtkBox *output_channel_box;
-    GtkBox *input_sources_box;
-    GtkBox *input_switches_box;
-    GtkComboBoxText *sync_source_comboboxtext;
-    GtkEntry *sync_status_entry;
+    SmApp *app; ///< Pointer to the application object @ref SmApp.
+    const gchar* prefix; ///< ALSA sound card name prefix to find (e.g. "Scarlett").
+    GtkFileFilter *file_filter; ///< GtkFileFilter for file dialogs.
+    GtkLabel *card_name_label; ///< GtkLabel to display the card name.
+    GtkLabel *config_filename_label; ///< GtkLabel to display the loaded configuration file,
+    GtkButton *open_config_button; ///< GtkButton to open a configuration file.
+    GtkToggleButton *reveal_input_config_togglebutton; ///< GtkToggleButton to show and hide the input source settings.
+    GtkButton *save_config_button; ///< GtkButton to save the current configuration.
+    GtkMenuButton *config_menubutton; ///< GtkMenuButton to display the menu.
+    GtkStack *main_stack; ///< GtkStack as container for the main views (Mix, Searching, Error).
+    GtkNotebook *output_mix_notebook; ///< GtkNotebook as container widget for the different mixes.
+    GList *mix_pages; ///< GList to display the pages for the different mixes.
+    GtkBox *output_channel_main_box; ///< GtkBox to display the Master channel faders.
+    GtkBox *output_channel_box; ///< GtkBox to display the output channel faders.
+    GtkBox *input_sources_box; ///< GtkBox to display the input sources.
+    GtkBox *input_switches_box;///< GtkBox to display the input switches.
+    GtkComboBoxText *sync_source_comboboxtext; ///< GtkComboBoxText to display the clock synchronization sources.
+    GtkEntry *sync_status_entry; ///< GtkEntry to display the clock synchronization status.
 };
 
+/**
+ * @brief Type definition for initialization data structure.
+ */
 typedef struct _SmAppWinInitArg SmAppWinInitArg;
 
+/**
+ * @brief Structure used to pass initialization data for GUI elements.
+ */
 struct _SmAppWinInitArg
 {
-    SmAppWinPrivate *priv;
-    GList *list;
+    SmAppWinPrivate *priv; ///< Pointer to private attributes object.
+    GList *list; ///< List containing the initialization data.
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(SmAppWin, sm_appwin,

@@ -32,26 +32,32 @@
 #include "sm-source.h"
 #include "sm-switch.h"
 
+/**
+ * @brief Structure representing the application class.
+ */
 struct _SmAppClass
 {
-    GtkApplicationClass parent_class;
+    GtkApplicationClass parent_class; ///< Parent class.
 };
 
+/**
+ * @brief Structure holding the public attributes of the application object.
+ */
 struct _SmApp
 {
-    GtkApplication parent;
+    GtkApplication parent; ///< Parent object.
 
-    GSettings *settings;
-    snd_hctl_t *hctl;
-    snd_ctl_card_info_t *card_info;
-    const char *card_name;
-    snd_mixer_t *mixer;
-    GList *channels;
-    GList *input_sources;
-    GList *input_switches;
-    SmSwitch *clock_source;
-    SmSwitch *sync_status;
-    SmSwitch *usb_sync;
+    GSettings *settings; ///< GLib GSettings object.
+    snd_hctl_t *hctl; ///< ALSA control handle (initialized by @ref sm_app_open_mixer()).
+    snd_ctl_card_info_t *card_info; ///< ALSA card info (initialized by @ref sm_app_open_mixer()).
+    const char *card_name; ///< ALSA card name (initialized by @ref sm_app_open_mixer()).
+    snd_mixer_t *mixer; ///< ALSA mixer (initialized by @ref sm_app_open_mixer()).
+    GList *channels; ///< List of @ref _SmChannel mixer channels (initialized by @ref sm_app_open_mixer()).
+    GList *input_sources; ///< List of @ref _SmSource mixer input sources (initialized by @ref sm_app_open_mixer()).
+    GList *input_switches; ///< List of @ref _SmSwitch mixer input switches (initialized by @ref sm_app_open_mixer()).
+    SmSwitch *clock_source; ///< Clock source @ref _SmSwitch (initialized by @ref sm_app_open_mixer()).
+    SmSwitch *sync_status; ///< Sync status @ref _SmSwitch (initialized by @ref sm_app_open_mixer()).
+    SmSwitch *usb_sync; ///< USB sync @ref _SmSwitch (initialized by @ref sm_app_open_mixer()).
 };
 
 G_DEFINE_TYPE(SmApp, sm_app, GTK_TYPE_APPLICATION);

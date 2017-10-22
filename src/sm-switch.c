@@ -18,16 +18,19 @@
 
 #include "sm-switch.h"
 
+/**
+ * @brief Structure holding the ALSA mixer elements belonging to an switch.
+ */
 struct _SmSwitch
 {
-    GObject parent_instance;
+    GObject parent_instance; ///< Parent object.
 
     /* Other members, including private data. */
-    snd_mixer_elem_t *elem;
-    sm_switch_type_t type;
-    gchar *name;
-    unsigned int id;
-    gchar *type_name;
+    snd_mixer_elem_t *elem; ///< Switch ALSA mixer element.
+    sm_switch_type_t type; ///< Switch type.
+    gchar *name; ///< Switch name
+    unsigned int id; ///< Switch ID.
+    gchar *type_name; ///< Switch type name.
 };
 
 G_DEFINE_TYPE(SmSwitch, sm_switch, G_TYPE_OBJECT);
