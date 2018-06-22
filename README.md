@@ -19,6 +19,8 @@ The application depends on these libraries:
 - Gtk+ >= 3.16
 - JSON-Glib >= 1.0
 
+Make sure the development headers of the libraries are also installed.
+
 The application is built with these commands:
 ```
 autoreconf -i
