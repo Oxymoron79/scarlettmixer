@@ -27,7 +27,7 @@ make
 ```
 Install the application:
 ```
-make install
+sudo make install
 ```
 
 ## How to report bugs
