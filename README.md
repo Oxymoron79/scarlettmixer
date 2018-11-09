@@ -14,6 +14,10 @@ The toolchain to build the application from source depends on these tools:
 - pkg-config >= 0.26
 - gcc >= 4.4
 
+To enable the build the developer documentation these tools should be installed:
+- doxygen >= 1.8
+- graphviz >= 2.40
+
 The application depends on these libraries:
 - alsa-lib >= 1.0.0
 - Gtk+ >= 3.16

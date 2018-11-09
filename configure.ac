@@ -21,6 +21,13 @@ AC_PROG_CC
 PKG_PROG_PKG_CONFIG
 GLIB_GSETTINGS
 
+AC_CHECK_PROGS([DOXYGEN], [doxygen], [])
+if test -z "$DOXYGEN";
+    then AC_MSG_WARN([Doxygen not found - continuing without Doxygen support])
+fi
+AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
+AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([Doxyfile])])
+
 dnl Libraries
 AC_CHECK_LIBM
 AC_SUBST(LIBM)

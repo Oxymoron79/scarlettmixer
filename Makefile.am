@@ -18,3 +18,36 @@ update-icon-cache:
 		echo "*** Icon cache not updated. After (un)install run:"; \
 		echo "*** $(gtk_update_icon_cache)"; \
 	fi
+
+if HAVE_DOXYGEN
+doxyfile.stamp:
+	@-echo "Generate developer documentation."; \
+	$(DOXYGEN) Doxyfile; \
+	touch doxyfile.stamp
+
+CLEANFILES = doxyfile.stamp
+
+all-local: doxyfile.stamp
+
+clean-local:
+	@-echo "Clean developer documentation."; \
+	rm -rf ${top_builddir}/html
+
+install-data-local: doxyfile.stamp
+	@-installfiles=`echo $(builddir)/html/*`; \
+	if test "$$installfiles" = '$(builddir)/html/*'; then \
+		echo 1>&2 "No documentation to install!"; \
+	else \
+		installdir="$(docdir)/html"; \
+		echo "Install developer documentation to $${installdir}"; \
+		$(mkinstalldirs) $${installdir}; \
+		for i in $$installfiles; do \
+			$(INSTALL_DATA) $$i $${installdir}; \
+		done; \
+	fi
+
+uninstall-local:
+	@-echo "Uninstall developer documentation from $(docdir)."; \
+	rm -rf $(docdir)
+
+endif
