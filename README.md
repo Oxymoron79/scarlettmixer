@@ -9,7 +9,6 @@ but should also work with other Scarlett interfaces.
 ## Build Instructions
 The toolchain to build the application from source depends on these tools:
 - autoconf >= 2.59
-- autoconf-archive = 2016.03.20
 - automake >= 1.11
 - pkg-config >= 0.26
 - gcc >= 4.4

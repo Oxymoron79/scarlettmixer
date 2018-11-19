@@ -7,6 +7,7 @@ AC_INIT([Scarlett Mixer],
         [http://www.github.com/Oxymoron79/scarlettmixer/issues],
         [scarlettmixer],
         [http://www.github.com/Oxymoron79/scarlettmixer])
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/scarlettmixer.c])
 AC_CONFIG_HEADER([src/config.h])
 AC_CANONICAL_SYSTEM
