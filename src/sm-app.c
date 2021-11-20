@@ -22,13 +22,11 @@
 #define G_SETTINGS_ENABLE_BACKEND
 #include <gio/gsettingsbackend.h>
 
-#include "sm-app.h"
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
-#include "sm-prefs.h"
+#include "sm-app.h"
 #include "sm-appwin.h"
 #include "sm-channel.h"
+#include "sm-prefs.h"
 #include "sm-source.h"
 #include "sm-switch.h"
 

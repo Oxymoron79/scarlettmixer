@@ -16,20 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "sm-app.h"
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
+#include "sm-app.h"
 
 int main(int argc, char *argv[]) {
     SmApp *app;
     int status;
 
-#ifndef NDEBUG
-    /* Use local GSettings schema directory.
-     * configure with --enable-debug switch to enable this section.
-     */
-    g_setenv("GSETTINGS_SCHEMA_DIR", "./build/src/", FALSE);
+#if DEBUG
+  /* Use local GSettings schema directory.
+   * configure with --enable-debug switch to enable this section.
+   */
+  g_setenv("GSETTINGS_SCHEMA_DIR", GSETTINGS_SCHEMA_DIR, FALSE);
 #endif
     app = sm_app_new();
     status = g_application_run(G_APPLICATION(app), argc, argv);
