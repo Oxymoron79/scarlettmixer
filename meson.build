@@ -38,3 +38,9 @@ install_data(
     'ScarlettMixer.desktop',
     install_dir: get_option('datadir') / 'applications'
 )
+
+# Post install
+if not get_option('debug')
+    gnome = import('gnome')
+    gnome.post_install(glib_compile_schemas: true, gtk_update_icon_cache: true)
+endif
