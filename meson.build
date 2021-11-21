@@ -1,5 +1,6 @@
-project('Scarlett Mixer', 'c', version: '0.1.0', license : 'GPL-3.0-only')
+project('Scarlett Mixer', 'c', version: '0.1.0', license : 'GPL-3.0-only', meson_version: '>=0.57.0')
 package = 'scarlettmixer'
+
 subdir('src')
 
 # Build doxygen documentation
