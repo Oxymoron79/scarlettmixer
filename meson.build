@@ -1,4 +1,4 @@
-project('Scarlett Mixer', 'c', version: '0.1.0', license : 'GPL-3.0-only', meson_version: '>=0.57.0')
+project('Scarlett Mixer', 'c', version: '0.1.0', license : 'GPL-3.0-only', meson_version: '>=0.60.0')
 package = 'scarlettmixer'
 
 subdir('src')
@@ -24,6 +24,7 @@ if doxygen.found() and graphviz.found()
         command: [ doxygen, doxyfile ],
         install: true,
         install_dir: get_option('datadir') / 'doc' / package,
+        install_tag: [ 'doc' ],
         build_by_default: true)
     
 else
