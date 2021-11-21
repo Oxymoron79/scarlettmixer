@@ -5,7 +5,8 @@ subdir('src')
 
 # Build doxygen documentation
 doxygen = find_program('doxygen', required : false)
-if doxygen.found()
+graphviz = find_program('dot', required : false)
+if doxygen.found() and graphviz.found()
     doc_config = configuration_data()
     doc_config.set('PACKAGE_NAME', meson.project_name())
     doc_config.set('PACKAGE_VERSION', meson.project_version())
@@ -26,7 +27,7 @@ if doxygen.found()
         build_by_default: true)
     
 else
-    message('doxygen not found: Documentation generation disabled.')
+    message('doxygen or graphviz not found: Documentation generation disabled.')
 endif
 
 # Install data files
