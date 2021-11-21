@@ -162,6 +162,10 @@ sm_switch_add_mixer_elem(SmSwitch *self, snd_mixer_elem_t *elem)
             {
                 self->type = SM_SWITCH_INPUT_PAD;
             }
+            if (g_strcmp0(self->type_name, "Gain") == 0)
+            {
+                self->type = SM_SWITCH_INPUT_GAIN;
+            }
             return TRUE;
         }
         if (g_str_has_prefix(elem_name, "Sample Clock Source"))

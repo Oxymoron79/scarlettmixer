@@ -27,6 +27,7 @@ typedef enum {
     SM_SWITCH_NONE,           //!< No type assigned.
     SM_SWITCH_INPUT_PAD,      //!< Input pad.
     SM_SWITCH_INPUT_IMPEDANCE,//!< Input impedance.
+    SM_SWITCH_INPUT_GAIN,     //!< Input gain.
     SM_SWITCH_CLOCK_SOURCE,   //!< Sample clock source.
     SM_SWITCH_SYNC_STATUS,    //!< Clock sync status.
     SM_SWITCH_USB_SYNC        //!< USB Sync.

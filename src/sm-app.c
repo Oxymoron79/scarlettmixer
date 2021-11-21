@@ -616,6 +616,7 @@ sm_app_open_mixer(SmApp *app, int card_number)
                     {
                         case SM_SWITCH_INPUT_IMPEDANCE:
                         case SM_SWITCH_INPUT_PAD:
+                        case SM_SWITCH_INPUT_GAIN:
                             app->input_switches = g_list_prepend(app->input_switches, sw);
                             break;
                         case SM_SWITCH_CLOCK_SOURCE:
