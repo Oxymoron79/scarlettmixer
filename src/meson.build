@@ -12,7 +12,7 @@ alsa_dep = dependency('alsa')
 
 # Generate config.h
 sm_conf = configuration_data()
-sm_conf.set_quoted('PACKAGE', 'scarlettmixer', description: 'Name of package')
+sm_conf.set_quoted('PACKAGE', package, description: 'Name of package')
 sm_conf.set_quoted('PACKAGE_NAME', meson.project_name(), description: 'Full name of this package')
 sm_conf.set_quoted('PACKAGE_VERSION', meson.project_version(), description: 'Version of this package')
 sm_conf.set10('DEBUG', get_option('debug'), description: 'Version of this package')
@@ -23,8 +23,7 @@ configure_file(output: 'config.h',
 
 # Compile GLib resources
 sm_resources = gnome.compile_resources(
-    'sm-app-resources', 'sm-app.gresource.xml',
-    source_dir: '.'
+    'sm-app-resources', 'sm-app.gresource.xml'
 )
 
 sm_sources = [
@@ -39,7 +38,7 @@ sm_sources = [
     'sm-mix-strip.c', 'sm-mix-strip.h'
 ]
 
-executable('scarlettmixer', [sm_sources, sm_resources], dependencies: [m_dep, gtk_dep, alsa_dep], install: true)
+executable(package, [sm_sources, sm_resources], dependencies: [m_dep, gtk_dep, alsa_dep], install: true)
 
 # Compile GSetting schema
 if get_option('debug')

@@ -1,5 +1,5 @@
 project('Scarlett Mixer', 'c', version: '0.1.0', license : 'GPL-3.0-only')
-
+package = 'scarlettmixer'
 subdir('src')
 
 # Build doxygen documentation
@@ -21,7 +21,7 @@ if doxygen.found()
         output: [ 'html' ],
         command: [ doxygen, doxyfile ],
         install: true,
-        install_dir: get_option('datadir') / 'doc' / 'scarlettmixer',
+        install_dir: get_option('datadir') / 'doc' / package,
         build_by_default: true)
     
 else
