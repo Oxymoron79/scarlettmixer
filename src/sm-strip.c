@@ -107,8 +107,6 @@ scale_value_changed_cb(GtkRange *range, gpointer user_data)
     GtkRange *other_range;
     gdouble value;
     gdouble vol_db;
-    gboolean joined;
-    int err;
     snd_mixer_selem_channel_id_t ch;
 
     priv = sm_strip_get_instance_private(user_data);
@@ -142,7 +140,6 @@ mute_togglebutton_toggled_cb(GtkToggleButton *togglebutton, gpointer user_data)
 {
     SmStripPrivate *priv;
     gboolean active = FALSE;
-    int err;
 
     priv = sm_strip_get_instance_private(user_data);
     active = gtk_toggle_button_get_active(togglebutton);
@@ -315,8 +312,7 @@ sm_strip_new(SmChannel *channel)
     SmStripPrivate *priv;
     GList *list;
     gdouble vol_db, min_db, max_db;
-    int err, mute;
-    int idx;
+    int idx, mute;
 
     strip = g_object_new(SM_STRIP_TYPE, NULL);
     priv = sm_strip_get_instance_private(strip);

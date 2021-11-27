@@ -189,7 +189,6 @@ sm_appwin_dispose(GObject *object)
 {
     SmAppWin *win;
     SmAppWinPrivate *priv;
-    GList *li;
 
     win = SM_APPWIN(object);
     priv = sm_appwin_get_instance_private(win);
@@ -328,7 +327,6 @@ sm_appwin_init_strips(gpointer data)
     GtkViewport *viewport;
     GtkBox *box;
     GtkLabel *label;
-    gint idx;
     const gchar *mix_ids;
     gboolean pack_strip;
 
@@ -396,7 +394,7 @@ sm_appwin_init_strips(gpointer data)
                 gtk_widget_show_all(GTK_WIDGET(scrolled_win));
                 arg->priv->mix_pages = g_list_prepend(arg->priv->mix_pages, box);
                 label = GTK_LABEL(gtk_label_new(g_strdup_printf("Mix %c & %c",mix_ids[0], mix_ids[1])));
-                idx = gtk_notebook_append_page(arg->priv->output_mix_notebook, GTK_WIDGET(scrolled_win), GTK_WIDGET(label));
+                gtk_notebook_append_page(arg->priv->output_mix_notebook, GTK_WIDGET(scrolled_win), GTK_WIDGET(label));
             }
             if (pack_strip)
             {
@@ -405,6 +403,8 @@ sm_appwin_init_strips(gpointer data)
             }
             break;
         }
+        default:
+            g_warning("Unknown channel type: %ud", sm_channel_get_channel_type(ch));
     }
     arg->list = g_list_next(arg->list);
     if (arg->list)
@@ -488,7 +488,6 @@ sm_appwin_init_input_switches(gpointer data)
     GtkComboBoxText *comboboxtext;
     GtkStyleContext *style_ctx;
     gint idx, *switch_id;
-    gchar *name;
     gboolean new_box;
 
     arg = (SmAppWinInitArg*)data;

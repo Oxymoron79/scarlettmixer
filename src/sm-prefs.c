@@ -110,9 +110,6 @@ clear_btn_clicked_cb(GtkButton *button, gpointer data)
 static void
 sm_prefs_dispose(GObject *object)
 {
-    SmPrefsPrivate *priv;
-
-    priv = sm_prefs_get_instance_private(SM_PREFS(object));
     G_OBJECT_CLASS(sm_prefs_parent_class)->dispose(object);
 }
 

@@ -234,8 +234,6 @@ static void
 sm_mix_strip_channel_changed_cb(SmChannel *channel, gpointer user_data)
 {
     SmMixStripPrivate *priv;
-    gdouble vol_db;
-    int mute;
     const gchar *name;
     int idx;
 
@@ -329,7 +327,6 @@ sm_mix_strip_add_channel(SmMixStrip *strip, SmChannel *channel)
     SmMixStripPrivate *priv;
     unsigned int cid;
     int mix_idx;
-    gdouble vol_db;
 
     priv = sm_mix_strip_get_instance_private(strip);
     if (sm_channel_get_channel_type(channel) != SM_CHANNEL_MIX)
@@ -365,8 +362,8 @@ sm_mix_strip_new(SmChannel *channel)
     SmMixStrip *strip;
     SmMixStripPrivate *priv;
     GList *list;
-    gdouble vol_db, min_db, max_db;
-    int mix_idx, mix_idx2, err, idx;
+    gdouble min_db, max_db;
+    int mix_idx, mix_idx2, idx;
 
     if (sm_channel_get_channel_type(channel) != SM_CHANNEL_MIX)
     {

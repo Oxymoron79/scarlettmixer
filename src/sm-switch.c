@@ -348,7 +348,7 @@ sm_switch_load_from_json_node(SmSwitch *self, JsonNode *node)
         return FALSE;
     }
     switch_index = json_object_get_int_member(jo, "switch_index");
-    g_debug("sm_switch %s: read switch index: %d", self->name, switch_index);
+    g_debug("sm_switch %s: read switch index: %ld", self->name, switch_index);
     sm_switch_set_selected_item_index(self, (unsigned int)switch_index);
     return TRUE;
 }
