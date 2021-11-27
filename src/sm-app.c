@@ -60,8 +60,6 @@ struct _SmApp
 
 G_DEFINE_TYPE(SmApp, sm_app, GTK_TYPE_APPLICATION);
 
-static const gchar *prefix_scarlett = "Scarlett";
-static const gchar *prefix_intel = "HDA Intel";
 static const gchar *prefix = "Scarlett";
 
 #define SM_CONFIG_ERROR sm_config_error_quark()
