@@ -8,8 +8,7 @@ but should also work with other Scarlett interfaces.
 
 ## Build Instructions
 The toolchain to build the application from source depends on these tools:
-- autoconf >= 2.59
-- automake >= 1.11
+- meson >= 0.60.0
 - pkg-config >= 0.26
 - gcc >= 4.4
 
@@ -25,17 +24,18 @@ The application depends on these libraries:
 Make sure the development headers of the libraries are also installed.
 
 The application is built with these commands:
+
 ```
-autoreconf -i
-./configure
-make
+meson setup build --buildtype=release [--prefix=/usr]
+meson compile -C build
 ```
+
 Install the application:
+
 ```
-sudo make install
+sudo meson install
 ```
 
 ## How to report bugs
-Bugs should be reported to the GitHub issues tracking system
-(http://www.github.com/Oxymoron79/scarlettmixer/issues). 
-You will need to create an account for yourself.
+Bugs should be reported to the [GitHub issues](http://www.github.com/Oxymoron79/scarlettmixer/issues)
+tracking system. You will need to create an account for yourself.
